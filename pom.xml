@@ -2,22 +2,24 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>org.example</groupId>
+  <groupId>top.haoliny</groupId>
   <artifactId>y-rpc</artifactId>
   <version>1.0-SNAPSHOT</version>
-  <packaging>jar</packaging>
+  <modules>
+    <module>y-rpc-common</module>
+    <module>y-rpc-server</module>
+    <module>y-rpc-client</module>
+  </modules>
+  <packaging>pom</packaging>
 
   <name>y-rpc</name>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.source>11</maven.compiler.source>
+    <maven.compiler.target>11</maven.compiler.target>
   </properties>
 
   <dependencies>
-    <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-engine</artifactId>
-      <version>5.6.0</version>
-    </dependency>
   </dependencies>
 </project>
