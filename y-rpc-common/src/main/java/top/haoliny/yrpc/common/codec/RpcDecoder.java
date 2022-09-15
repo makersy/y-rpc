@@ -12,21 +12,18 @@ import java.util.List;
 /**
  * @author yhl
  * @date 2022/9/14
- * @description
- * <pre>
- *       +---------------+-----------------------+
- *       |  Data Length  |          数据          |
- *       +---------------+-----------------------+
- *       |    4 Byte     |  "Data Length" Bytes  |
- *       +----------------------------------------
- * </pre>
+ * @description See message structure in {@link RpcEncoder}
  */
 
 @Slf4j
 @RequiredArgsConstructor
 public class RpcDecoder<T> extends ByteToMessageDecoder {
+
+  // 序列化器
   private final Serialization serialization;
-  private final Class<?> serialClz;
+  // 序列化对象类型
+
+  private final Class<?> clz;
 
   @Override
   protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
@@ -47,7 +44,7 @@ public class RpcDecoder<T> extends ByteToMessageDecoder {
     byte[] data = new byte[dataLen];
     in.readBytes(data);
     // 反序列化
-    Object obj = serialization.deserialize(data, serialClz);
+    Object obj = serialization.deserialize(data, clz);
     out.add(obj);
   }
 }

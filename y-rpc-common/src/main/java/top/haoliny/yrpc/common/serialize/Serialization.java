@@ -1,5 +1,7 @@
 package top.haoliny.yrpc.common.serialize;
 
+import javax.annotation.Nullable;
+
 /**
  * @author yhl
  * @date 2022/9/14
@@ -14,6 +16,7 @@ public interface Serialization {
    * @param obj 源对象
    * @return 序列化后的byte数组
    */
+  @Nullable
   <T> byte[] serialize(T obj);
 
   /**
@@ -23,5 +26,6 @@ public interface Serialization {
    * @param clz   目标类型
    * @return 目标类型的对象
    */
+  @Nullable
   <T> T deserialize(byte[] bytes, Class<T> clz);
 }
