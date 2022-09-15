@@ -5,6 +5,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import top.haoliny.yrpc.common.constants.Constant;
 import top.haoliny.yrpc.common.serialize.Serialization;
 
 import java.util.List;
@@ -17,17 +18,17 @@ import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
-public class RpcDecoder<T> extends ByteToMessageDecoder {
+public class RpcDecoder extends ByteToMessageDecoder {
 
   // 序列化器
   private final Serialization serialization;
-  // 序列化对象类型
 
+  // 序列化对象类型
   private final Class<?> clz;
 
   @Override
   protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
-    if (in.readableBytes() < 4) {
+    if (in.readableBytes() < Constant.LENGTH_FIELD_LENGTH) {
       return;
     }
     in.markReaderIndex();

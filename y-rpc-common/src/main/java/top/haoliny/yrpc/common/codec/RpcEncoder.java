@@ -30,6 +30,7 @@ public class RpcEncoder extends MessageToByteEncoder {
 
   // 序列化器
   private final Serialization serialization;
+
   // 序列化对象类型
   private final Class<?> clz;
 
@@ -38,9 +39,12 @@ public class RpcEncoder extends MessageToByteEncoder {
     try {
       checkNotNull(clz, "clz == nil");
 
+      // 序列化
       byte[] bytes = serialization.serialize(msg);
       if (bytes != null) {
+        // 写入数据长度
         out.writeInt(bytes.length);
+        // 写入数据
         out.writeBytes(bytes);
       }
     } catch (Exception e) {
