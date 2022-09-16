@@ -11,7 +11,7 @@ import lombok.Data;
 @Data
 public class RpcRequest {
   /**
-   * 请求编号
+   * 请求id
    */
   private String requestId;
   /**
@@ -23,7 +23,11 @@ public class RpcRequest {
    */
   private String methodName;
   /**
-   * 请求参数
+   * 参数类型
+   */
+  private Class<?>[] parameterTypes;
+  /**
+   * 参数
    */
   private Object[] parameters;
 }
