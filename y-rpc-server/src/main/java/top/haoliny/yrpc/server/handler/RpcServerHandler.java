@@ -48,6 +48,8 @@ public class RpcServerHandler extends ChannelInboundHandlerAdapter implements Ap
   }
 
   /**
+   * 执行本地service方法
+   *
    * @param request client请求
    * @return 执行结果
    * @throws Throwable 可能出现的异常

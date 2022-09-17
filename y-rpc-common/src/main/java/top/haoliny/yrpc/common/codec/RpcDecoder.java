@@ -5,7 +5,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import top.haoliny.yrpc.common.constants.Constant;
+import top.haoliny.yrpc.common.constants.Constants;
 import top.haoliny.yrpc.common.serialize.Serialization;
 
 import java.util.List;
@@ -28,7 +28,7 @@ public class RpcDecoder extends ByteToMessageDecoder {
 
   @Override
   protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
-    if (in.readableBytes() < Constant.LENGTH_FIELD_LENGTH) {
+    if (in.readableBytes() < Constants.LENGTH_FIELD_LENGTH) {
       return;
     }
     in.markReaderIndex();
