@@ -1,4 +1,4 @@
-package top.haoliny.yrpc.demo.server.service;
+package top.haoliny.yrpc.demo.server;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

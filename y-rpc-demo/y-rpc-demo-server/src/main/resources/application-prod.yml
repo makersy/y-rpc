@@ -1,0 +1,5 @@
+yrpc:
+  registry:
+    zookeeper:
+      addr: 127.0.0.1:2181
+    protocol: zookeeper

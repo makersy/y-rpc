@@ -14,6 +14,8 @@ import org.springframework.stereotype.Component;
 @Component
 @Data
 public class RegistryConfig {
-
-  private String address;
+  /**
+   * 注册中心协议
+   */
+  private String protocol = "zookeeper";
 }

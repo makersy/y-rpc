@@ -14,19 +14,4 @@ import org.springframework.stereotype.Component;
 @Component
 @Data
 public class RpcServerConfig {
-  /**
-   * 服务端口
-   */
-  private int serverPort;
-  /**
-   * zookeeper server地址
-   */
-  private String zookeeperAddr;
-
-  /**
-   * zookeeper连接有效期
-   */
-  private int zookeeperSessionTimeout;
-
-  private String zookeeperTopic;
 }

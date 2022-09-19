@@ -25,6 +25,7 @@ import top.haoliny.yrpc.server.handler.RpcServerHandler;
 import top.haoliny.yrpc.server.registry.Registry;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Resource;
 
 /**
  * @author yhl
@@ -37,7 +38,6 @@ import javax.annotation.Nonnull;
 @Slf4j
 public class RpcServer {
 
-  private final RpcServerConfig rpcServerConfig;
   private final RpcServerHandler rpcServerHandler;
   private final Registry registry;
 

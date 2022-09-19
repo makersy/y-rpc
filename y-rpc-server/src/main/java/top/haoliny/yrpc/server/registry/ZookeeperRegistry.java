@@ -6,10 +6,11 @@ import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooDefs;
 import org.apache.zookeeper.ZooKeeper;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import top.haoliny.yrpc.common.constants.Constants;
-import top.haoliny.yrpc.server.config.RegistryConfig;
-import top.haoliny.yrpc.server.config.RpcServerConfig;
+import top.haoliny.yrpc.server.config.ZookeeperConfig;
 
 import java.net.InetAddress;
 
@@ -22,16 +23,23 @@ import java.net.InetAddress;
 @Service
 @Slf4j
 @RequiredArgsConstructor
+@ConditionalOnProperty(prefix = "yrpc.registry", name = "protocol", havingValue = "zookeeper")
 public class ZookeeperRegistry implements Registry {
 
-  private final RpcServerConfig config;
-  private final RegistryConfig registryConfig;
+  private final ZookeeperConfig zkConfig;
+
+  @Value("${server.port}")
+  private int serverPort;
+
+  private ZooKeeper zooKeeper;
 
   @Override
   public void register() throws Throwable {
+    log.info("Start to connect zookeeper, addr: {}", zkConfig.getAddr());
+
     // 初始化连接
     ZooKeeper zk = new ZooKeeper(
-            config.getZookeeperAddr(),
+            zkConfig.getAddr(),
             Constants.ZK_SESSION_TIMEOUT,
             watchedEvent -> {
               Watcher.Event.KeeperState state = watchedEvent.getState();
@@ -58,17 +66,19 @@ public class ZookeeperRegistry implements Registry {
     }
 
     // 创建/easy-rpc/{topic}节点
-    path += "/" + config.getZookeeperTopic();
+    path += "/" + zkConfig.getTopic();
     if (zk.exists(path, false) == null) {
       zk.create(path, new byte[0], ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
     }
 
     // 创建/easy-rpc/{topic}/{ip:port}节点
     InetAddress addr = InetAddress.getLocalHost();
-    path += "/" + addr.getHostAddress() + config.getServerPort();
+    path += "/" + addr.getHostAddress() + ":" + serverPort;
     if (zk.exists(path, false) == null) {
       zk.create(path, new byte[0], ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
     }
+
+    this.zooKeeper = zk;
   }
 
 

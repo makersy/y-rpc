@@ -1,0 +1,5 @@
+server:
+  port: 25810
+spring:
+  profiles:
+    active: '@profile-active@'
