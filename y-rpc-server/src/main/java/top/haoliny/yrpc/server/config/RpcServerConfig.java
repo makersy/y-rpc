@@ -1,6 +1,6 @@
 package top.haoliny.yrpc.server.config;
 
-import lombok.Getter;
+import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 
 @ConfigurationProperties(prefix = "yrpc")
 @Component
-@Getter
+@Data
 public class RpcServerConfig {
   /**
    * 服务端口

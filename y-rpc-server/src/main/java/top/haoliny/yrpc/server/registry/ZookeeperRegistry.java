@@ -8,6 +8,7 @@ import org.apache.zookeeper.ZooDefs;
 import org.apache.zookeeper.ZooKeeper;
 import org.springframework.stereotype.Service;
 import top.haoliny.yrpc.common.constants.Constants;
+import top.haoliny.yrpc.server.config.RegistryConfig;
 import top.haoliny.yrpc.server.config.RpcServerConfig;
 
 import java.net.InetAddress;
@@ -24,6 +25,7 @@ import java.net.InetAddress;
 public class ZookeeperRegistry implements Registry {
 
   private final RpcServerConfig config;
+  private final RegistryConfig registryConfig;
 
   @Override
   public void register() throws Throwable {

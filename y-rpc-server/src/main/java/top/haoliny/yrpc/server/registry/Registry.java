@@ -11,5 +11,5 @@ public interface Registry {
   /**
    * 注册至注册中心
    */
-  void register() throws Throwable;
+  abstract void register() throws Throwable;
 }

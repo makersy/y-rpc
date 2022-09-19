@@ -15,6 +15,10 @@
     <module>y-rpc-server</module>
     <module>y-rpc-client</module>
     <module>y-rpc-sample</module>
+    <module>y-rpc-demo</module>
+    <module>y-rpc-demo/y-rpc-demo-api</module>
+    <module>y-rpc-demo/y-rpc-demo-server</module>
+    <module>y-rpc-demo/y-rpc-demo-client</module>
   </modules>
   <packaging>pom</packaging>
 
@@ -33,15 +37,12 @@
       <version>1.18.24</version>
       <scope>provided</scope>
     </dependency>
+
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-maven-plugin</artifactId>
-        <version>2.4.0</version>
-      </plugin>
-    </plugins>
-  </build>
 </project>
