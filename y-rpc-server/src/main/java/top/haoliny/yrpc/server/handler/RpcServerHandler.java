@@ -4,16 +4,16 @@ import com.google.common.base.Preconditions;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import top.haoliny.yrpc.common.model.RpcRequest;
 import top.haoliny.yrpc.common.model.RpcResponse;
+import top.haoliny.yrpc.server.support.BeanRepository;
 
-import javax.annotation.Nonnull;
 import java.lang.reflect.Method;
+import java.util.concurrent.ExecutorService;
 
 /**
  * @author yhl
@@ -24,14 +24,32 @@ import java.lang.reflect.Method;
 @Slf4j
 @Component
 @ChannelHandler.Sharable
-public class RpcServerHandler extends ChannelInboundHandlerAdapter implements ApplicationContextAware {
+public class RpcServerHandler extends ChannelInboundHandlerAdapter {
 
-  private ApplicationContext applicationContext;
+  private final ExecutorService serverThreadPool;
+  private final BeanRepository beanRepository;
+
+  public RpcServerHandler(@Qualifier("serverThreadPool") ExecutorService serverThreadPool, BeanRepository beanRepository) {
+    this.serverThreadPool = serverThreadPool;
+    this.beanRepository = beanRepository;
+  }
 
   @Override
   public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
     if (msg instanceof RpcRequest) {
       RpcRequest request = (RpcRequest) msg;
+      // 线程
+      serverThreadPool.submit(new RpcRunnable(request, ctx));
+    }
+  }
+
+  @RequiredArgsConstructor
+  class RpcRunnable implements Runnable {
+    private final RpcRequest request;
+    private final ChannelHandlerContext ctx;
+
+    @Override
+    public void run() {
       RpcResponse response = new RpcResponse();
       response.setRequestId(request.getRequestId());
 
@@ -39,12 +57,11 @@ public class RpcServerHandler extends ChannelInboundHandlerAdapter implements Ap
         Object invokeResult = invoke(request);
         response.setResult(invokeResult);
       } catch (Throwable e) {
-        log.error("RpcServerHandler catch error", e);
         response.setThrowable(e);
+        log.error("RpcServerHandler invoke err", e);
       }
       ctx.writeAndFlush(response);
     }
-
   }
 
   /**
@@ -58,7 +75,7 @@ public class RpcServerHandler extends ChannelInboundHandlerAdapter implements Ap
     //todo 避免使用forName，后续可优化。后续可在启动时加载所有rpc service，将servicename和service bean的映射缓存起来
     Class<?> serviceClass = Class.forName(request.getClassName());
 
-    Object serviceBean = applicationContext.getBean(serviceClass);
+    Object serviceBean = beanRepository.getBean(serviceClass);
     Preconditions.checkNotNull(serviceBean, String.format("failed to find service bean, className: %s", request.getClassName()));
 
     Method method = serviceClass.getMethod(request.getMethodName(), request.getParameterTypes());
@@ -67,8 +84,4 @@ public class RpcServerHandler extends ChannelInboundHandlerAdapter implements Ap
     return method.invoke(serviceBean, request.getParameters());
   }
 
-  @Override
-  public void setApplicationContext(@Nonnull ApplicationContext applicationContext) throws BeansException {
-    this.applicationContext = applicationContext;
-  }
 }
