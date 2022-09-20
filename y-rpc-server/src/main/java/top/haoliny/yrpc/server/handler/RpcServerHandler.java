@@ -12,6 +12,7 @@ import top.haoliny.yrpc.common.model.RpcRequest;
 import top.haoliny.yrpc.common.model.RpcResponse;
 import top.haoliny.yrpc.server.support.BeanRepository;
 
+import javax.annotation.Resource;
 import java.lang.reflect.Method;
 import java.util.concurrent.ExecutorService;
 
@@ -26,13 +27,12 @@ import java.util.concurrent.ExecutorService;
 @ChannelHandler.Sharable
 public class RpcServerHandler extends ChannelInboundHandlerAdapter {
 
-  private final ExecutorService serverThreadPool;
-  private final BeanRepository beanRepository;
+  @Resource(name = "serverThreadPool")
+  private ExecutorService serverThreadPool;
 
-  public RpcServerHandler(@Qualifier("serverThreadPool") ExecutorService serverThreadPool, BeanRepository beanRepository) {
-    this.serverThreadPool = serverThreadPool;
-    this.beanRepository = beanRepository;
-  }
+  @Resource
+  private BeanRepository beanRepository;
+
 
   @Override
   public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {

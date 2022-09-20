@@ -20,12 +20,10 @@ import top.haoliny.yrpc.common.codec.RpcEncoder;
 import top.haoliny.yrpc.common.model.RpcRequest;
 import top.haoliny.yrpc.common.model.RpcResponse;
 import top.haoliny.yrpc.common.serialize.JsonSerialization;
-import top.haoliny.yrpc.server.config.RpcServerConfig;
 import top.haoliny.yrpc.server.handler.RpcServerHandler;
-import top.haoliny.yrpc.server.registry.Registry;
+import top.haoliny.yrpc.common.registry.Registry0;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Resource;
 
 /**
  * @author yhl
@@ -39,7 +37,7 @@ import javax.annotation.Resource;
 public class RpcServer {
 
   private final RpcServerHandler rpcServerHandler;
-  private final Registry registry;
+  private final Registry0 registry;
 
   private ServerBootstrap bootstrap;
   private EventLoopGroup bossGroup;
@@ -73,7 +71,7 @@ public class RpcServer {
 
     // 注册
     try {
-      registry.register();
+      registry.registerProvider();
     } catch (Throwable throwable) {
       throw new RuntimeException(throwable);
     }

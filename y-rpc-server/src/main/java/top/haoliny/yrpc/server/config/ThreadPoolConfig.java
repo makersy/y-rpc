@@ -26,11 +26,11 @@ public class ThreadPoolConfig {
   /**
    * 最大线程数
    */
-  private int threads;
+  private int threads = 100;
   /**
    * 队列长度
    */
-  private int queues;
+  private int queues = 0;
 
   @Bean
   public ExecutorService serverThreadPool() {
@@ -44,6 +44,6 @@ public class ThreadPoolConfig {
       blockingQueue = new LinkedBlockingQueue<>(queues);
     }
     return new ThreadPoolExecutor(threads, threads, 0, TimeUnit.MILLISECONDS,
-            blockingQueue, new NamedThreadFactory(""));
+            blockingQueue, new NamedThreadFactory("RpcServer"));
   }
 }

@@ -16,9 +16,15 @@ public class Constants {
    * zk会话超时
    */
   public static final int ZK_SESSION_TIMEOUT = 5000;
+
   /**
-   * zk注册路径
+   * zk curator namespace
    */
-  public static final String ZK_REGISTRY_PATH = "/y-rpc";
+  public static final String ZK_NAMESPACE = "y-rpc";
+
+  /**
+   * zk注册基本路径
+   */
+  public static final String ZK_REGISTRY_PATH = "/" + ZK_NAMESPACE;
 
 }

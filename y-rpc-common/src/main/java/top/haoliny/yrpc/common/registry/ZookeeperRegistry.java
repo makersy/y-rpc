@@ -1,7 +1,14 @@
-package top.haoliny.yrpc.server.registry;
+package top.haoliny.yrpc.common.registry;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.curator.framework.CuratorFramework;
+import org.apache.curator.framework.CuratorFrameworkFactory;
+import org.apache.curator.retry.ExponentialBackoffRetry;
+import org.apache.curator.x.discovery.ServiceCache;
+import org.apache.curator.x.discovery.ServiceDiscovery;
+import org.apache.curator.x.discovery.details.InstanceSerializer;
+import org.apache.curator.x.discovery.details.JsonInstanceSerializer;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooDefs;
@@ -9,22 +16,25 @@ import org.apache.zookeeper.ZooKeeper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
+import top.haoliny.yrpc.common.config.ZookeeperConfig;
 import top.haoliny.yrpc.common.constants.Constants;
-import top.haoliny.yrpc.server.config.ZookeeperConfig;
+import top.haoliny.yrpc.common.model.ServiceInfo;
 
 import java.net.InetAddress;
+import java.util.List;
 
 /**
  * @author yhl
  * @date 2022/9/17
  * @description
+ * todo 将provider信息注册到service级别，而不是注册到服务级别。
  */
 
-@Service
+//@Service
 @Slf4j
 @RequiredArgsConstructor
-@ConditionalOnProperty(prefix = "yrpc.registry", name = "protocol", havingValue = "zookeeper")
-public class ZookeeperRegistry implements Registry {
+//@ConditionalOnProperty(prefix = "yrpc.registry", name = "protocol", havingValue = "zookeeper")
+public class ZookeeperRegistry<T> implements Registry {
 
   private final ZookeeperConfig zkConfig;
 
@@ -33,10 +43,23 @@ public class ZookeeperRegistry implements Registry {
 
   private ZooKeeper zooKeeper;
 
-  @Override
-  public void register() throws Throwable {
+  private InstanceSerializer<ServiceInfo> serializer = new JsonInstanceSerializer<>(ServiceInfo.class);
+  private ServiceDiscovery<T> serviceDiscovery;
+
+  private ServiceCache<T> serviceCache;
+
+  public void start() throws Throwable {
+    // 初始化client
     log.info("Start to connect zookeeper, addr: {}", zkConfig.getAddr());
 
+    CuratorFramework client = CuratorFrameworkFactory.newClient(zkConfig.getAddr(), new ExponentialBackoffRetry(1000, 3));
+    client.start();
+    client.create()
+            .withMode(CreateMode.PERSISTENT)
+            .withACL(ZooDefs.Ids.OPEN_ACL_UNSAFE)
+            .forPath(Constants.ZK_REGISTRY_PATH);
+
+    // -------------
     // 初始化连接
     ZooKeeper zk = new ZooKeeper(
             zkConfig.getAddr(),
@@ -52,7 +75,7 @@ public class ZookeeperRegistry implements Registry {
                 try {
                   // 自动重连
                   log.info("Trying to reconnect zookeeper, path: {}", watchedEvent.getPath());
-                  register();
+                  start();
                 } catch (Throwable t) {
                   log.error("Reconnect zk failed", t);
                 }
@@ -81,5 +104,18 @@ public class ZookeeperRegistry implements Registry {
     this.zooKeeper = zk;
   }
 
+  @Override
+  public void registerService(String serviceName) throws Exception {
 
+  }
+
+  @Override
+  public void unregisterService(String serviceName) throws Exception {
+
+  }
+
+  @Override
+  public List<ServiceInfo> findServiceProviders(String serviceName) {
+    return null;
+  }
 }

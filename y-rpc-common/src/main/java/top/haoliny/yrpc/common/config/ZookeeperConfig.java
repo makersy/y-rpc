@@ -1,4 +1,4 @@
-package top.haoliny.yrpc.server.config;
+package top.haoliny.yrpc.common.config;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -25,7 +25,7 @@ public class ZookeeperConfig {
   private int sessionTimeout = 5000;
 
   /**
-   * zookeeper topic
+   * zookeeper topic，这里可使用服务名
    */
-  private String topic = "providerService";
+  private String topic = "testService";
 }
