@@ -6,7 +6,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import top.haoliny.yrpc.common.model.RpcRequest;
 import top.haoliny.yrpc.common.model.RpcResponse;
@@ -32,7 +31,6 @@ public class RpcServerHandler extends ChannelInboundHandlerAdapter {
 
   @Resource
   private BeanRepository beanRepository;
-
 
   @Override
   public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
