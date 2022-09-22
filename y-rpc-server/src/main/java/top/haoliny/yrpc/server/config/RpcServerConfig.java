@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
  * @description
  */
 
-@ConfigurationProperties(prefix = "yrpc")
+@ConfigurationProperties(prefix = "yrpc.server")
 @Component
 @Data
 public class RpcServerConfig {

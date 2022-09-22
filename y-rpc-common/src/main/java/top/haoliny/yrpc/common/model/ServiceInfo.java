@@ -1,6 +1,8 @@
 package top.haoliny.yrpc.common.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 
@@ -11,6 +13,8 @@ import java.io.Serializable;
  */
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class ServiceInfo implements Serializable {
   private static final long serialVersionUID = -8106879843261279092L;
 

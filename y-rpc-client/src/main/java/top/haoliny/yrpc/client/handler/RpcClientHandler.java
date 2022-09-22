@@ -1,8 +1,12 @@
 package top.haoliny.yrpc.client.handler;
 
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.SimpleChannelInboundHandler;
-import top.haoliny.yrpc.common.model.RpcResponse;
+import io.netty.channel.*;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
+import top.haoliny.yrpc.client.cache.ChannelCache;
+import top.haoliny.yrpc.common.model.RpcRequest;
+import top.haoliny.yrpc.common.util.CommonUtil;
 
 /**
  * @author yhl
@@ -10,15 +14,40 @@ import top.haoliny.yrpc.common.model.RpcResponse;
  * @description
  */
 
-public class RpcClientHandler extends SimpleChannelInboundHandler<RpcResponse> {
+@ChannelHandler.Sharable
+@Component
+@RequiredArgsConstructor
+@Slf4j
+public class RpcClientHandler extends ChannelDuplexHandler {
+
+  @Override
+  public void channelActive(ChannelHandlerContext ctx) throws Exception {
+    ChannelCache.add(ctx.channel());
+  }
+
+  @Override
+  public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+    ChannelCache.remove(CommonUtil.getRemoteAddr(ctx.channel()));
+  }
 
   @Override
   public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+    super.channelRead(ctx, msg);
 
   }
 
   @Override
-  protected void channelRead0(ChannelHandlerContext ctx, RpcResponse msg) throws Exception {
+  public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
+    super.write(ctx, msg, promise);
+    // 发送请求之后注册回调
+    promise.addListener(new ChannelFutureListener() {
+      @Override
+      public void operationComplete(ChannelFuture future) throws Exception {
+        if (msg instanceof RpcRequest) {
+          RpcRequest request = (RpcRequest) msg;
 
+        }
+      }
+    });
   }
 }

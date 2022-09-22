@@ -62,7 +62,7 @@ public class RpcServer {
               @Override
               protected void initChannel(@Nonnull Channel channel) throws Exception {
                 channel.pipeline()
-                        .addLast(new LengthFieldBasedFrameDecoder(65535, 0, 4))
+                        .addLast(new LengthFieldBasedFrameDecoder(65536, 0, 4))
                         .addLast(new RpcEncoder(new JsonSerialization(), RpcResponse.class))
                         .addLast(new RpcDecoder(new JsonSerialization(), RpcRequest.class))
                         .addLast(rpcServerHandler);

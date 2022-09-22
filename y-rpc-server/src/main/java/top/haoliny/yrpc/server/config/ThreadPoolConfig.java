@@ -15,7 +15,7 @@ import java.util.concurrent.*;
  */
 
 @Configuration
-@ConfigurationProperties(prefix = "yrpc.server")
+@ConfigurationProperties(prefix = "yrpc.server.thread")
 @Data
 public class ThreadPoolConfig {
 
