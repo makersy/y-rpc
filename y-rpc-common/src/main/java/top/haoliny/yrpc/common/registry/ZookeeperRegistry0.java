@@ -12,6 +12,7 @@ import org.apache.zookeeper.data.Stat;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
+import top.haoliny.yrpc.common.config.RegistryConfig;
 import top.haoliny.yrpc.common.config.ZookeeperConfig;
 import top.haoliny.yrpc.common.constants.Constants;
 
@@ -31,6 +32,7 @@ import java.util.List;
 @ConditionalOnProperty(prefix = "yrpc.registry", name = "protocol", havingValue = "zookeeper")
 public class ZookeeperRegistry0 implements Registry0 {
 
+  private final RegistryConfig registryConfig;
   private final ZookeeperConfig zkConfig;
 
   @Value("${server.port}")
@@ -54,7 +56,7 @@ public class ZookeeperRegistry0 implements Registry0 {
   @Override
   public void registerProvider() throws Throwable {
     // 创建topic节点
-    String path = "/" + zkConfig.getTopic();
+    String path = "/" + registryConfig.getTopic();
     Stat stat = client.checkExists().forPath(path.intern());
     if (stat == null) {
       client.create()
@@ -79,7 +81,7 @@ public class ZookeeperRegistry0 implements Registry0 {
 
   @Override
   public List<String> getNodeList(String topic) throws Exception {
-    String path = "/" + zkConfig.getTopic();
+    String path = "/" + registryConfig.getTopic();
     if (client.getState() != CuratorFrameworkState.STARTED) {
       log.warn("Get {} children failed, as zookeeper client not start", path);
       return Collections.emptyList();

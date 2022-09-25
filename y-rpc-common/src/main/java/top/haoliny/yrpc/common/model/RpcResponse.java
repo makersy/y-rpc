@@ -10,6 +10,7 @@ import lombok.Data;
 
 @Data
 public class RpcResponse {
+
   /**
    * 请求编号
    */
@@ -22,4 +23,14 @@ public class RpcResponse {
    * 返回值
    */
   private Object result;
+
+  /**
+   * @return 错误响应
+   */
+  public static RpcResponse buildErrorResponse(RpcRequest request, Throwable t) {
+    RpcResponse response = new RpcResponse();
+    response.setRequestId(request.getRequestId());
+    response.setThrowable(t);
+    return response;
+  }
 }

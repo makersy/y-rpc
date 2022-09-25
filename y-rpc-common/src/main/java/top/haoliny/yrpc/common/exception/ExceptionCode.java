@@ -7,5 +7,13 @@ package top.haoliny.yrpc.common.exception;
  */
 
 public class ExceptionCode {
+  /**
+   * consumer连接出错
+   */
   public static final int CLIENT_CONNECT_FAILED = 1;
+
+  /**
+   * 无provider节点
+   */
+  public static final int NO_PROVIDERS = 2;
 }

@@ -18,4 +18,9 @@ public class RegistryConfig {
    * 注册中心协议
    */
   private String protocol = "zookeeper";
+
+  /**
+   * 标识 provider
+   */
+  private String topic = "testService";
 }

@@ -13,20 +13,27 @@ import io.netty.util.concurrent.DefaultThreadFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import top.haoliny.yrpc.client.cache.ChannelCache;
 import top.haoliny.yrpc.client.handler.RpcClientHandler;
+import top.haoliny.yrpc.client.support.RpcFuture;
 import top.haoliny.yrpc.common.codec.RpcDecoder;
 import top.haoliny.yrpc.common.codec.RpcEncoder;
 import top.haoliny.yrpc.common.config.ProtocolConfig;
+import top.haoliny.yrpc.common.config.RegistryConfig;
 import top.haoliny.yrpc.common.exception.ExceptionCode;
 import top.haoliny.yrpc.common.exception.YrpcException;
 import top.haoliny.yrpc.common.model.RpcRequest;
 import top.haoliny.yrpc.common.model.RpcResponse;
+import top.haoliny.yrpc.common.registry.Registry0;
 import top.haoliny.yrpc.common.serialize.Serialization;
 import top.haoliny.yrpc.common.serialize.SerializationFactory;
 
 import javax.annotation.PostConstruct;
 
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -41,6 +48,9 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 @Slf4j
 @RequiredArgsConstructor
 public class RpcClient {
+
+  private final Registry0 registry0;
+  private final RegistryConfig registryConfig;
   private final ProtocolConfig protocolConfig;
   private final RpcClientHandler rpcClientHandler;
 
@@ -81,6 +91,35 @@ public class RpcClient {
             });
   }
 
+  private RpcFuture call(String serviceName, String methodName, Class<?>[] parameterTypes, Object[] parameters) throws Exception {
+    List<String> nodeList = registry0.getNodeList(registryConfig.getTopic());
+    if (CollectionUtils.isEmpty(nodeList)) {
+      throw new YrpcException(ExceptionCode.NO_PROVIDERS, "no provider");
+    }
+
+    // 随机一个节点
+    // todo 负载均衡
+    String serverAddr = nodeList.get(ThreadLocalRandom.current().nextInt(nodeList.size()));
+    RpcRequest request = new RpcRequest();
+    request.setClassName(serviceName);
+    request.setMethodName(methodName);
+    request.setParameterTypes(parameterTypes);
+    request.setParameters(parameters);
+
+    // 写入channel缓冲区
+    Channel channel = getChannel(serverAddr);
+    channel.writeAndFlush(request);
+
+    return new RpcFuture(request);
+  }
+
+  /**
+   * 如果channel已建立，则返回该channel；否则建立新的channel并返回
+   *
+   * @param addr ip:port
+   * @return started channel
+   * @throws Exception if connect failed
+   */
   private Channel getChannel(String addr) throws Exception {
     Channel channel = ChannelCache.get(addr);
     if (channel != null) {

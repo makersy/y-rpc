@@ -23,9 +23,4 @@ public class ZookeeperConfig {
    * zookeeper连接有效期
    */
   private int sessionTimeout = 5000;
-
-  /**
-   * zookeeper topic，这里可使用服务名
-   */
-  private String topic = "testService";
 }

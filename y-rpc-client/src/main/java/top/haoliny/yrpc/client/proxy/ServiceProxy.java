@@ -29,6 +29,6 @@ public class ServiceProxy {
 
   @SuppressWarnings("unchecked")
   public static <T> T newInstance(Class<T> clz) {
-    return (T) Proxy.newProxyInstance(clz.getClassLoader(), clz.getInterfaces(), new ClientInvocationHandler());
+    return (T) Proxy.newProxyInstance(clz.getClassLoader(), clz.getInterfaces(), new ClientInvocationHandler<>(clz));
   }
 }
