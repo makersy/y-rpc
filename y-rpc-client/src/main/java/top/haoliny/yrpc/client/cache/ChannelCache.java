@@ -1,7 +1,6 @@
 package top.haoliny.yrpc.client.cache;
 
 import io.netty.channel.Channel;
-import org.springframework.stereotype.Component;
 import top.haoliny.yrpc.common.util.CommonUtil;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -45,5 +44,12 @@ public class ChannelCache {
    */
   public static void remove(String addr) {
     channelCache.remove(addr);
+  }
+
+  /**
+   * see {@link ConcurrentHashMap#putIfAbsent(Object, Object)}
+   */
+  public static Channel putIfAbsent(String addr, Channel channel) {
+    return channelCache.putIfAbsent(addr, channel);
   }
 }

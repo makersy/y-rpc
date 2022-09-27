@@ -1,4 +1,4 @@
-package top.haoliny.yrpc.client;
+package top.haoliny.yrpc.client.support;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -8,65 +8,69 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.util.concurrent.DefaultThreadFactory;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.util.CollectionUtils;
 import top.haoliny.yrpc.client.cache.ChannelCache;
 import top.haoliny.yrpc.client.handler.RpcClientHandler;
-import top.haoliny.yrpc.client.support.RpcFuture;
 import top.haoliny.yrpc.common.codec.RpcDecoder;
 import top.haoliny.yrpc.common.codec.RpcEncoder;
-import top.haoliny.yrpc.common.config.ProtocolConfig;
-import top.haoliny.yrpc.common.config.RegistryConfig;
 import top.haoliny.yrpc.common.exception.ExceptionCode;
 import top.haoliny.yrpc.common.exception.YrpcException;
 import top.haoliny.yrpc.common.model.RpcRequest;
 import top.haoliny.yrpc.common.model.RpcResponse;
-import top.haoliny.yrpc.common.registry.Registry0;
 import top.haoliny.yrpc.common.serialize.Serialization;
 import top.haoliny.yrpc.common.serialize.SerializationFactory;
-import top.haoliny.yrpc.common.util.BeanRepository;
 import top.haoliny.yrpc.common.util.CommonUtil;
-
-import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.locks.ReentrantLock;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 /**
  * @author yhl
- * @date 2022/9/23
+ * @date 2022/9/28
  * @description
  */
 
 @Slf4j
-public class RpcClient {
-
-  private final Registry0 registry0;
-  private final RegistryConfig registryConfig;
-  private final ProtocolConfig protocolConfig;
+public class NettyClient {
 
   private static final int CLIENT_CONNECT_TIMEOUT = 3000;
-  private static final ReentrantLock LOCK = new ReentrantLock();
 
   private Bootstrap bootstrap;
   private Serialization serialization;
   private volatile Channel channel;
 
-  public RpcClient() {
-    this(BeanRepository.getBean(Registry0.class),
-            BeanRepository.getBean(RegistryConfig.class),
-            BeanRepository.getBean(ProtocolConfig.class));
+  public NettyClient() {
+
   }
 
-  public RpcClient(Registry0 registry0, RegistryConfig registryConfig, ProtocolConfig protocolConfig) {
-    this.registry0 = registry0;
-    this.registryConfig = registryConfig;
-    this.protocolConfig = protocolConfig;
+  public NettyClient(String host, int port) {
     init();
   }
 
   public void init() {
     initBootStrap(new RpcClientHandler());
+  }
+
+  public void connect(String host, int port) throws YrpcException {
+    // 建立连接
+    ChannelFuture future = bootstrap.connect(host, port);
+
+    // 阻塞等待结果
+    boolean completed = future.awaitUninterruptibly(CLIENT_CONNECT_TIMEOUT, MILLISECONDS);
+    if (completed && future.isSuccess()) {
+      // 如果channel池有已建立的连接，就舍弃掉这次新建立的channel，使用已有channel
+      channel = ChannelCache.putIfAbsent(CommonUtil.getRemoteAddr(future.channel()), future.channel());
+      if (channel == null) {
+        channel = future.channel();
+      } else {
+        future.channel().close();
+      }
+    } else if (future.cause() != null) {
+      // 连接异常
+      throw new YrpcException(ExceptionCode.CLIENT_CONNECT_FAILED, future.cause());
+    } else {
+      // 连接发生未知异常
+      throw new YrpcException(ExceptionCode.CLIENT_CONNECT_FAILED, "unknown error");
+    }
+    this.channel = channel;
   }
 
   private void initBootStrap(ChannelDuplexHandler clientHandler) {
@@ -96,63 +100,6 @@ public class RpcClient {
                         .addLast("yrpc-client-handler", clientHandler);
               }
             });
-  }
-
-  public RpcResponse send(String serviceName, String methodName, Class<?>[] parameterTypes, Object[] parameters, int timeout) throws Exception {
-    List<String> nodeList = registry0.getNodeList(registryConfig.getTopic());
-    if (CollectionUtils.isEmpty(nodeList)) {
-      throw new YrpcException(ExceptionCode.NO_PROVIDERS, "no provider");
-    }
-
-    // 随机一个节点
-    // todo 负载均衡
-    String serverAddr = nodeList.get(ThreadLocalRandom.current().nextInt(nodeList.size()));
-
-    RpcRequest request = new RpcRequest();
-    request.setClassName(serviceName);
-    request.setMethodName(methodName);
-    request.setParameterTypes(parameterTypes);
-    request.setParameters(parameters);
-
-    // 写入channel缓冲区
-    Channel channel = getChannel(serverAddr);
-    channel.writeAndFlush(request).await();
-
-    RpcFuture rpcFuture = RpcFuture.findById(request.getRequestId());
-    if (rpcFuture == null) {
-      log.error("find rpcFuture failed, requestInfo: {}", request);
-      return RpcResponse.buildErrorResponse(request, new YrpcException(ExceptionCode.CLIENT_INTERNAL_ERROR,
-              String.format("Can't find rpcFuture, requestId: %s", request.getRequestId())));
-    }
-    return rpcFuture.get();
-  }
-
-  public RpcFuture sendAsync(String serviceName, String methodName, Class<?>[] parameterTypes, Object[] parameters) throws Exception {
-    List<String> nodeList = registry0.getNodeList(registryConfig.getTopic());
-    if (CollectionUtils.isEmpty(nodeList)) {
-      throw new YrpcException(ExceptionCode.NO_PROVIDERS, "no provider");
-    }
-
-    // 随机一个节点
-    // todo 负载均衡
-    String serverAddr = nodeList.get(ThreadLocalRandom.current().nextInt(nodeList.size()));
-
-    RpcRequest request = new RpcRequest();
-    request.setClassName(serviceName);
-    request.setMethodName(methodName);
-    request.setParameterTypes(parameterTypes);
-    request.setParameters(parameters);
-
-    // 写入channel缓冲区
-    Channel channel = getChannel(serverAddr);
-    channel.writeAndFlush(request).await();
-
-    // 生成rpcFuture
-    return new RpcFuture(request);
-  }
-
-  private void connect() {
-
   }
 
   /**

@@ -14,7 +14,7 @@ import java.util.concurrent.*;
 
 public class RpcFuture extends CompletableFuture<RpcResponse> {
 
-  private static final ConcurrentHashMap<String, RpcFuture> futureCache = new ConcurrentHashMap<>();
+  private static final ConcurrentHashMap<String, RpcFuture> FUTURE_CACHE = new ConcurrentHashMap<>();
 
   private final RpcRequest request;
   private final int timeout;
@@ -26,6 +26,7 @@ public class RpcFuture extends CompletableFuture<RpcResponse> {
   public RpcFuture(@Nonnull RpcRequest request, int timeout) {
     this.request = request;
     this.timeout = timeout;
+    FUTURE_CACHE.put(request.getRequestId(), this);
   }
 
   @Override
@@ -33,7 +34,7 @@ public class RpcFuture extends CompletableFuture<RpcResponse> {
     try {
       return super.get(timeout, TimeUnit.MILLISECONDS);
     } catch (TimeoutException e) {
-      futureCache.remove(request.getRequestId());
+      FUTURE_CACHE.remove(request.getRequestId());
       return RpcResponse.buildErrorResponse(request, e);
     }
   }
@@ -43,7 +44,12 @@ public class RpcFuture extends CompletableFuture<RpcResponse> {
    * @param requestId requestId
    * @return requestId 对应的 RpcFuture
    */
-  public RpcFuture getFuture(String requestId) {
-    return futureCache.get(requestId);
+  public static RpcFuture findById(String requestId) {
+    return FUTURE_CACHE.get(requestId);
+  }
+
+  @Override
+  public boolean complete(RpcResponse value) {
+    return super.complete(value);
   }
 }

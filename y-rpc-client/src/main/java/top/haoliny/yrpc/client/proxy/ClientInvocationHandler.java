@@ -1,6 +1,7 @@
 package top.haoliny.yrpc.client.proxy;
 
 import lombok.RequiredArgsConstructor;
+import top.haoliny.yrpc.client.RpcClient;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -15,6 +16,7 @@ import java.lang.reflect.Method;
 public class ClientInvocationHandler<T> implements InvocationHandler {
 
   private final Class<T> clz;
+  private RpcClient[] clients;
 
   @Override
   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {

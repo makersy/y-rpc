@@ -9,7 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import top.haoliny.yrpc.common.model.RpcRequest;
 import top.haoliny.yrpc.common.model.RpcResponse;
-import top.haoliny.yrpc.server.support.BeanRepository;
+import top.haoliny.yrpc.common.util.BeanRepository;
 
 import javax.annotation.Resource;
 import java.lang.reflect.Method;
@@ -73,7 +73,7 @@ public class RpcServerHandler extends ChannelInboundHandlerAdapter {
     //todo 避免使用forName，后续可优化。后续可在启动时加载所有rpc service，将servicename和service bean的映射缓存起来
     Class<?> serviceClass = Class.forName(request.getClassName());
 
-    Object serviceBean = beanRepository.getBean(serviceClass);
+    Object serviceBean = BeanRepository.getBean(serviceClass);
     Preconditions.checkNotNull(serviceBean, String.format("failed to find service bean, className: %s", request.getClassName()));
 
     Method method = serviceClass.getMethod(request.getMethodName(), request.getParameterTypes());

@@ -16,4 +16,9 @@ public class ExceptionCode {
    * 无provider节点
    */
   public static final int NO_PROVIDERS = 2;
+
+  /**
+   * consumer内部错误
+   */
+  public static final int CLIENT_INTERNAL_ERROR = 3;
 }
