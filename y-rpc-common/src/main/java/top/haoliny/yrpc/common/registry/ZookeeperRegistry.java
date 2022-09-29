@@ -14,11 +14,9 @@ import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooDefs;
 import org.apache.zookeeper.ZooKeeper;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.stereotype.Service;
 import top.haoliny.yrpc.common.config.ZookeeperConfig;
 import top.haoliny.yrpc.common.constants.Constants;
-import top.haoliny.yrpc.common.model.ServiceInfo;
+import top.haoliny.yrpc.common.model.URLAddress;
 
 import java.net.InetAddress;
 import java.util.List;
@@ -43,7 +41,7 @@ public class ZookeeperRegistry<T> implements Registry {
 
   private ZooKeeper zooKeeper;
 
-  private InstanceSerializer<ServiceInfo> serializer = new JsonInstanceSerializer<>(ServiceInfo.class);
+  private InstanceSerializer<URLAddress> serializer = new JsonInstanceSerializer<>(URLAddress.class);
   private ServiceDiscovery<T> serviceDiscovery;
 
   private ServiceCache<T> serviceCache;
@@ -115,7 +113,7 @@ public class ZookeeperRegistry<T> implements Registry {
   }
 
   @Override
-  public List<ServiceInfo> findServiceProviders(String serviceName) {
+  public List<URLAddress> findServiceProviders(String serviceName) {
     return null;
   }
 }

@@ -1,6 +1,6 @@
 package top.haoliny.yrpc.common.registry;
 
-import top.haoliny.yrpc.common.model.ServiceInfo;
+import top.haoliny.yrpc.common.model.URLAddress;
 
 import java.util.List;
 
@@ -16,5 +16,5 @@ public interface Registry {
 
   void unregisterService(String serviceName) throws Exception;
 
-  List<ServiceInfo> findServiceProviders(String serviceName);
+  List<URLAddress> findServiceProviders(String serviceName);
 }
