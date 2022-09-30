@@ -24,6 +24,9 @@ import top.haoliny.yrpc.common.model.URL;
 import top.haoliny.yrpc.common.serialize.SerializationFactory;
 import top.haoliny.yrpc.common.util.CommonUtil;
 
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 /**
@@ -37,6 +40,7 @@ public class NettyClient {
 
   private static final int CLIENT_CONNECT_TIMEOUT = 3000;
 
+  private final Lock lock = new ReentrantLock();
   private final URL url;
 
   private Bootstrap bootstrap;
@@ -50,6 +54,7 @@ public class NettyClient {
       connect();
     } catch (YrpcException e) {
       log.error("channel connect error", e);
+      close();
     }
   }
 
@@ -106,10 +111,24 @@ public class NettyClient {
     this.channel = channel;
   }
 
-  public void send(Object msg) {
+  public RpcFuture send(RpcRequest request) throws InterruptedException {
     if (channel == null || !channel.isActive()) {
       log.error("send message failed since channel is not active");
     }
-    channel.writeAndFlush(msg);
+    channel.writeAndFlush(request).await();
+    return new RpcFuture(request);
+  }
+
+  public void close() {
+    lock.lock();
+    try {
+      if (channel != null) {
+        channel.close();
+      }
+    } catch (Throwable e) {
+      log.warn(e.getMessage(), e);
+    } finally {
+      lock.unlock();
+    }
   }
 }

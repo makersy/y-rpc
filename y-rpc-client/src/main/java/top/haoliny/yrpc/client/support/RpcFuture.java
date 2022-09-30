@@ -29,6 +29,10 @@ public class RpcFuture extends CompletableFuture<RpcResponse> {
     FUTURE_CACHE.put(request.getRequestId(), this);
   }
 
+  public static void addFuture(@Nonnull RpcRequest request) {
+    new RpcFuture(request);
+  }
+
   @Override
   public RpcResponse get() throws InterruptedException, ExecutionException {
     try {

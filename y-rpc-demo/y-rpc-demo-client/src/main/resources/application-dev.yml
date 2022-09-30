@@ -1,0 +1,5 @@
+yrpc:
+  registry:
+    zookeeper:
+      addr: 82.156.24.222:2181
+    protocol: zookeeper

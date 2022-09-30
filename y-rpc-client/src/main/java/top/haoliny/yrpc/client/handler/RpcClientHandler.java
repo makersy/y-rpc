@@ -54,6 +54,7 @@ public class RpcClientHandler extends ChannelDuplexHandler {
       public void operationComplete(ChannelFuture future) throws Exception {
         if (msg instanceof RpcRequest) {
           RpcRequest request = (RpcRequest) msg;
+          
         }
       }
     });

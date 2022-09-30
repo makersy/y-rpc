@@ -1,7 +1,12 @@
 package top.haoliny.yrpc.client.proxy;
 
-import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import top.haoliny.yrpc.client.RpcClient;
+import top.haoliny.yrpc.common.config.ProtocolConfig;
+import top.haoliny.yrpc.common.config.RegistryConfig;
+import top.haoliny.yrpc.common.model.RpcResponse;
+import top.haoliny.yrpc.common.registry.Registry0;
+import top.haoliny.yrpc.common.util.SpringUtil;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -12,15 +17,34 @@ import java.lang.reflect.Method;
  * @description
  */
 
-@RequiredArgsConstructor
+@Slf4j
 public class ClientInvocationHandler<T> implements InvocationHandler {
 
   private final Class<T> clz;
-  private RpcClient[] clients;
+
+  private RpcClient rpcClient;
+
+  public ClientInvocationHandler(Class<T> clz) {
+    this.clz = clz;
+    this.rpcClient = getRpcClient();
+  }
 
   @Override
   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+    Class<?> className = method.getDeclaringClass();
+    String methodName = method.getName();
+    Class<?>[] parameterTypes = method.getParameterTypes();
 
-    return null;
+    RpcResponse rpcResponse = rpcClient.send(className.getName(), methodName, parameterTypes, args);
+    log.debug("Get rpcResponse: {}", rpcResponse);
+
+    return rpcResponse.getResult();
+  }
+
+  private synchronized RpcClient getRpcClient() {
+    return new RpcClient(
+            SpringUtil.getBean(Registry0.class),
+            SpringUtil.getBean(RegistryConfig.class),
+            SpringUtil.getBean(ProtocolConfig.class));
   }
 }

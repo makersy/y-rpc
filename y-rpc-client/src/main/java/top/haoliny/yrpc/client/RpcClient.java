@@ -23,7 +23,7 @@ import top.haoliny.yrpc.common.model.RpcResponse;
 import top.haoliny.yrpc.common.registry.Registry0;
 import top.haoliny.yrpc.common.serialize.Serialization;
 import top.haoliny.yrpc.common.serialize.SerializationFactory;
-import top.haoliny.yrpc.common.util.BeanRepository;
+import top.haoliny.yrpc.common.util.SpringUtil;
 import top.haoliny.yrpc.common.util.CommonUtil;
 
 import java.util.List;
@@ -53,9 +53,9 @@ public class RpcClient {
   private volatile Channel channel;
 
   public RpcClient() {
-    this(BeanRepository.getBean(Registry0.class),
-            BeanRepository.getBean(RegistryConfig.class),
-            BeanRepository.getBean(ProtocolConfig.class));
+    this(SpringUtil.getBean(Registry0.class),
+            SpringUtil.getBean(RegistryConfig.class),
+            SpringUtil.getBean(ProtocolConfig.class));
   }
 
   public RpcClient(Registry0 registry0, RegistryConfig registryConfig, ProtocolConfig protocolConfig) {
@@ -98,7 +98,7 @@ public class RpcClient {
             });
   }
 
-  public RpcResponse send(String serviceName, String methodName, Class<?>[] parameterTypes, Object[] parameters, int timeout) throws Exception {
+  public RpcResponse send(String className, String methodName, Class<?>[] parameterTypes, Object[] parameters) throws Exception {
     List<String> nodeList = registry0.getNodeList(registryConfig.getTopic());
     if (CollectionUtils.isEmpty(nodeList)) {
       throw new YrpcException(ExceptionCode.NO_PROVIDERS, "no provider");
@@ -109,7 +109,7 @@ public class RpcClient {
     String serverAddr = nodeList.get(ThreadLocalRandom.current().nextInt(nodeList.size()));
 
     RpcRequest request = new RpcRequest();
-    request.setClassName(serviceName);
+    request.setClassName(className);
     request.setMethodName(methodName);
     request.setParameterTypes(parameterTypes);
     request.setParameters(parameters);
@@ -125,30 +125,6 @@ public class RpcClient {
               String.format("Can't find rpcFuture, requestId: %s", request.getRequestId())));
     }
     return rpcFuture.get();
-  }
-
-  public RpcFuture sendAsync(String serviceName, String methodName, Class<?>[] parameterTypes, Object[] parameters) throws Exception {
-    List<String> nodeList = registry0.getNodeList(registryConfig.getTopic());
-    if (CollectionUtils.isEmpty(nodeList)) {
-      throw new YrpcException(ExceptionCode.NO_PROVIDERS, "no provider");
-    }
-
-    // 随机一个节点
-    // todo 负载均衡
-    String serverAddr = nodeList.get(ThreadLocalRandom.current().nextInt(nodeList.size()));
-
-    RpcRequest request = new RpcRequest();
-    request.setClassName(serviceName);
-    request.setMethodName(methodName);
-    request.setParameterTypes(parameterTypes);
-    request.setParameters(parameters);
-
-    // 写入channel缓冲区
-    Channel channel = getChannel(serverAddr);
-    channel.writeAndFlush(request).await();
-
-    // 生成rpcFuture
-    return new RpcFuture(request);
   }
 
   private void connect() {

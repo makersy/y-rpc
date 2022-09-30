@@ -14,7 +14,7 @@ import javax.annotation.Nonnull;
  */
 
 @Component
-public class BeanRepository implements ApplicationContextAware {
+public class SpringUtil implements ApplicationContextAware {
 
   private static ApplicationContext applicationContext;
 
@@ -24,6 +24,6 @@ public class BeanRepository implements ApplicationContextAware {
 
   @Override
   public void setApplicationContext(@Nonnull ApplicationContext applicationContext) throws BeansException {
-    BeanRepository.applicationContext = applicationContext;
+    SpringUtil.applicationContext = applicationContext;
   }
 }

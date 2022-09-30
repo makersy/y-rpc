@@ -14,6 +14,7 @@ import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooDefs;
 import org.apache.zookeeper.ZooKeeper;
 import org.springframework.beans.factory.annotation.Value;
+import top.haoliny.yrpc.common.config.RegistryConfig;
 import top.haoliny.yrpc.common.config.ZookeeperConfig;
 import top.haoliny.yrpc.common.constants.Constants;
 import top.haoliny.yrpc.common.model.URLAddress;
@@ -34,6 +35,7 @@ import java.util.List;
 //@ConditionalOnProperty(prefix = "yrpc.registry", name = "protocol", havingValue = "zookeeper")
 public class ZookeeperRegistry<T> implements Registry {
 
+  private final RegistryConfig registryConfig;
   private final ZookeeperConfig zkConfig;
 
   @Value("${server.port}")
@@ -87,7 +89,7 @@ public class ZookeeperRegistry<T> implements Registry {
     }
 
     // 创建/easy-rpc/{topic}节点
-    path += "/" + zkConfig.getTopic();
+    path += "/" + registryConfig.getTopic();
     if (zk.exists(path, false) == null) {
       zk.create(path, new byte[0], ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
     }
