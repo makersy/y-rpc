@@ -23,8 +23,8 @@ import top.haoliny.yrpc.common.model.RpcResponse;
 import top.haoliny.yrpc.common.registry.Registry0;
 import top.haoliny.yrpc.common.serialize.Serialization;
 import top.haoliny.yrpc.common.serialize.SerializationFactory;
-import top.haoliny.yrpc.common.util.SpringUtil;
 import top.haoliny.yrpc.common.util.CommonUtil;
+import top.haoliny.yrpc.common.util.SpringUtil;
 
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
@@ -118,17 +118,9 @@ public class RpcClient {
     Channel channel = getChannel(serverAddr);
     channel.writeAndFlush(request).await();
 
-    RpcFuture rpcFuture = RpcFuture.findById(request.getRequestId());
-    if (rpcFuture == null) {
-      log.error("find rpcFuture failed, requestInfo: {}", request);
-      return RpcResponse.buildErrorResponse(request, new YrpcException(ExceptionCode.CLIENT_INTERNAL_ERROR,
-              String.format("Can't find rpcFuture, requestId: %s", request.getRequestId())));
-    }
+    RpcFuture rpcFuture = new RpcFuture(request);
+
     return rpcFuture.get();
-  }
-
-  private void connect() {
-
   }
 
   /**

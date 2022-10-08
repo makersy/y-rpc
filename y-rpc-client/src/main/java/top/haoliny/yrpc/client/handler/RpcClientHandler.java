@@ -6,6 +6,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import top.haoliny.yrpc.client.cache.ChannelCache;
 import top.haoliny.yrpc.client.support.RpcFuture;
+import top.haoliny.yrpc.common.exception.ExceptionCode;
+import top.haoliny.yrpc.common.exception.YrpcException;
 import top.haoliny.yrpc.common.model.RpcRequest;
 import top.haoliny.yrpc.common.model.RpcResponse;
 import top.haoliny.yrpc.common.util.CommonUtil;
@@ -38,7 +40,13 @@ public class RpcClientHandler extends ChannelDuplexHandler {
     if (msg instanceof RpcResponse) {
       RpcResponse resp = (RpcResponse) msg;
       RpcFuture rpcFuture = RpcFuture.findById(resp.getRequestId());
-      if (rpcFuture != null && !rpcFuture.isDone()) {
+
+      if (rpcFuture == null) {
+        throw new YrpcException(ExceptionCode.CLIENT_INTERNAL_ERROR,
+                String.format("Can't find rpcFuture, requestId: %s", resp.getRequestId()));
+      }
+
+      if (!rpcFuture.isDone()) {
         rpcFuture.complete(resp);
       }
     }

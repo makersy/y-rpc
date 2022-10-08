@@ -7,11 +7,11 @@ import java.lang.annotation.Target;
 
 /**
  * @author yhl
- * @date 2022/9/24
- * @description 用于引入yrpc服务的注解
+ * @date 2022/10/8
+ * @description
  */
 
-@Target({ElementType.FIELD, ElementType.METHOD, ElementType.ANNOTATION_TYPE})
+@Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface RpcReference {
+public @interface RpcService {
 }
