@@ -1,39 +1,35 @@
 package top.haoliny.yrpc.client.proxy;
 
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.stereotype.Component;
+import lombok.extern.slf4j.Slf4j;
 import top.haoliny.yrpc.client.util.ProxyUtil;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author yhl
- * @date 2022/9/24
+ * @date 2022/10/10
  * @description
  */
 
-@Component
-public class ProxyFactory implements ApplicationContextAware {
+@Slf4j
+public class ProxyFactory {
 
-  private static Map<Class<?>, Object> cache = new LinkedHashMap<>();
-
-  private ApplicationContext applicationContext;
+  private static ConcurrentHashMap<Class<?>, Object> proxyCache = new ConcurrentHashMap<>();
 
   @SuppressWarnings("unchecked")
-  public <T> T getOrCreateInstance(Class<T> clz) {
-    if (!cache.containsKey(clz)) {
-      // fixme 注入到spring bean容器，而不是作为静态缓存
-      cache.put(clz, ProxyUtil.newInstance(clz));
+  public static <T> T getProxyInstance(Class<T> clz) {
+    synchronized (clz) {
+      if (!proxyCache.containsKey(clz)) {
+        try {
+          T instance = ProxyUtil.newInstance(clz);
+          proxyCache.put(clz, instance);
+        } catch (Exception e) {
+          log.error("ProxyFactory create proxy error", e);
+          return null;
+        }
+        log.info("new proxy instance success, class: {}", clz);
+      }
     }
-    return (T) cache.get(clz);
-  }
-
-  @Override
-  public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-    this.applicationContext = applicationContext;
+    return (T) proxyCache.get(clz);
   }
 }

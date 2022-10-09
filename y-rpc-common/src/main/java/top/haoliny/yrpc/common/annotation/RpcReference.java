@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 /**
  * @author yhl
  * @date 2022/9/24
- * @description 用于引入yrpc服务的注解
+ * @description 引入yrpc服务
  */
 
 @Target({ElementType.FIELD, ElementType.METHOD, ElementType.ANNOTATION_TYPE})

@@ -87,6 +87,8 @@ public class ZookeeperRegistry0 implements Registry0 {
       return Collections.emptyList();
     }
 
+    byte[] getData = client.getData().forPath(path);
+    System.out.println(getData);
     return client.getChildren().forPath(path);
   }
 }

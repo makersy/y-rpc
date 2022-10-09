@@ -10,6 +10,7 @@ import top.haoliny.yrpc.common.util.SpringUtil;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @author yhl
@@ -22,11 +23,12 @@ public class ClientInvocationHandler<T> implements InvocationHandler {
 
   private final Class<T> clz;
 
+  private ReentrantLock lock;
   private RpcClient rpcClient;
 
   public ClientInvocationHandler(Class<T> clz) {
     this.clz = clz;
-    this.rpcClient = getRpcClient();
+    this.lock = new ReentrantLock();
   }
 
   @Override
@@ -35,16 +37,26 @@ public class ClientInvocationHandler<T> implements InvocationHandler {
     String methodName = method.getName();
     Class<?>[] parameterTypes = method.getParameterTypes();
 
+    if (rpcClient == null) {
+      initRpcClient();
+    }
     RpcResponse rpcResponse = rpcClient.send(className.getName(), methodName, parameterTypes, args);
     log.debug("Get rpcResponse: {}", rpcResponse);
 
     return rpcResponse.getResult();
   }
 
-  private synchronized RpcClient getRpcClient() {
-    return new RpcClient(
-            SpringUtil.getBean(Registry0.class),
-            SpringUtil.getBean(RegistryConfig.class),
-            SpringUtil.getBean(ProtocolConfig.class));
+  private void initRpcClient() {
+    lock.lock();
+    try {
+      if (rpcClient == null) {
+        rpcClient = new RpcClient(
+                SpringUtil.getBean(Registry0.class),
+                SpringUtil.getBean(RegistryConfig.class),
+                SpringUtil.getBean(ProtocolConfig.class));
+      }
+    } finally {
+      lock.unlock();
+    }
   }
 }

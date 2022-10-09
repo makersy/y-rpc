@@ -1,10 +1,9 @@
 package top.haoliny.yrpc.client.inject;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
-import org.springframework.core.annotation.Order;
+import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.stereotype.Component;
 import top.haoliny.yrpc.client.proxy.ProxyFactory;
 import top.haoliny.yrpc.common.annotation.RpcReference;
@@ -18,31 +17,27 @@ import java.lang.reflect.Field;
  */
 
 @Component
-@Order()
 @Slf4j
-@RequiredArgsConstructor
 public class RpcReferenceBeanPostProcessor implements BeanPostProcessor {
 
-  private final ProxyFactory proxyFactory;
-
   @Override
-  public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+  public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
     Class<?> clz = bean.getClass();
-    do {
-      for (Field field : clz.getDeclaredFields()) {
-        RpcReference rpcReference = field.getAnnotation(RpcReference.class);
-        if (rpcReference == null) {
-          continue;
-        }
-        field.setAccessible(true);
-        try {
-          field.set(bean, proxyFactory.getOrCreateInstance(clz));
-        } catch (IllegalAccessException e) {
-          log.error("error creating rpc reference proxy bean", e);
-        }
+    log.info("RpcReferenceBeanPostProcessor class: {}", clz.getName());
+    for (Field field : clz.getDeclaredFields()) {
+      RpcReference rpcReference = AnnotationUtils.getAnnotation(field, RpcReference.class);
+      if (rpcReference == null) {
+        continue;
       }
-      clz = clz.getSuperclass();
-    } while (clz != null && clz.getSuperclass() != null);
+      log.info("RpcReferenceBeanPostProcessor find RpcReference, class: {}, field: {}", clz.getName(), field.getName());
+      field.setAccessible(true);
+      try {
+        Object proxyBean = ProxyFactory.getProxyInstance(field.getType());
+        field.set(bean, proxyBean);
+      } catch (Exception e) {
+        log.error("error occurred when inject reference bean", e);
+      }
+    }
     return bean;
   }
 }
