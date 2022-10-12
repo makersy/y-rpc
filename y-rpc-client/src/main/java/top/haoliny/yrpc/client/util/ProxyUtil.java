@@ -14,6 +14,6 @@ public class ProxyUtil {
 
   @SuppressWarnings("unchecked")
   public static <T> T newInstance(Class<T> clz) {
-    return (T) Proxy.newProxyInstance(clz.getClassLoader(), clz.getInterfaces(), new ClientInvocationHandler<>(clz));
+    return (T) Proxy.newProxyInstance(clz.getClassLoader(), new Class[]{clz}, new ClientInvocationHandler<>(clz));
   }
 }

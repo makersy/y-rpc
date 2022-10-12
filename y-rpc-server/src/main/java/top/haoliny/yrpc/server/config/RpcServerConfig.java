@@ -14,4 +14,8 @@ import org.springframework.stereotype.Component;
 @Component
 @Data
 public class RpcServerConfig {
+  /**
+   * netty监听端口
+   */
+  private int port;
 }

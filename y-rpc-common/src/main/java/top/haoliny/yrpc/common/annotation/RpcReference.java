@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
  * @description 引入yrpc服务
  */
 
-@Target({ElementType.FIELD, ElementType.METHOD, ElementType.ANNOTATION_TYPE})
+@Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface RpcReference {
 }

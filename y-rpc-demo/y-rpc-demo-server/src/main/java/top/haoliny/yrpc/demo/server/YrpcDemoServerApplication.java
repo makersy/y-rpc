@@ -16,10 +16,14 @@ import java.util.concurrent.CountDownLatch;
 @SpringBootApplication(scanBasePackages = {"top.haoliny.yrpc"})
 public class YrpcDemoServerApplication {
 
-  public static void main(String[] args) throws InterruptedException {
+  public static void main(String[] args) {
     ConfigurableApplicationContext context = SpringApplication.run(YrpcDemoServerApplication.class, args);
     RpcServer server = context.getBean(RpcServer.class);
-    server.start();
-    new CountDownLatch(1).await();
+    try {
+      server.start();
+      new CountDownLatch(1).await();
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
   }
 }

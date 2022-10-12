@@ -20,6 +20,7 @@ import top.haoliny.yrpc.common.codec.RpcEncoder;
 import top.haoliny.yrpc.common.model.RpcRequest;
 import top.haoliny.yrpc.common.model.RpcResponse;
 import top.haoliny.yrpc.common.serialize.JsonSerialization;
+import top.haoliny.yrpc.server.config.RpcServerConfig;
 import top.haoliny.yrpc.server.handler.RpcServerHandler;
 import top.haoliny.yrpc.common.registry.Registry0;
 
@@ -37,13 +38,14 @@ import javax.annotation.Nonnull;
 public class RpcServer {
 
   private final RpcServerHandler rpcServerHandler;
+  private final RpcServerConfig serverConfig;
   private final Registry0 registry;
 
   private ServerBootstrap bootstrap;
   private EventLoopGroup bossGroup;
   private EventLoopGroup workerGroup;
 
-  public void start() {
+  public void start() throws InterruptedException {
     // 启动netty server
     bootstrap = new ServerBootstrap();
     bossGroup = new NioEventLoopGroup(1, new DefaultThreadFactory("NettyServer"));
@@ -68,6 +70,8 @@ public class RpcServer {
                         .addLast(rpcServerHandler);
               }
             });
+
+    bootstrap.bind(serverConfig.getPort()).sync();
 
     // 注册
     try {
