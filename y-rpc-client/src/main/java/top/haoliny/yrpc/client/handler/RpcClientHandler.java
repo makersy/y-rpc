@@ -8,7 +8,6 @@ import top.haoliny.yrpc.client.cache.ChannelCache;
 import top.haoliny.yrpc.client.support.RpcFuture;
 import top.haoliny.yrpc.common.exception.ExceptionCode;
 import top.haoliny.yrpc.common.exception.YrpcException;
-import top.haoliny.yrpc.common.model.RpcRequest;
 import top.haoliny.yrpc.common.model.RpcResponse;
 import top.haoliny.yrpc.common.util.CommonUtil;
 
@@ -39,6 +38,9 @@ public class RpcClientHandler extends ChannelDuplexHandler {
     super.channelRead(ctx, msg);
     if (msg instanceof RpcResponse) {
       RpcResponse resp = (RpcResponse) msg;
+      log.debug("client received server response: {}", resp);
+
+      // 从缓存池中找到rpcFuture
       RpcFuture rpcFuture = RpcFuture.findById(resp.getRequestId());
 
       if (rpcFuture == null) {
@@ -55,15 +57,10 @@ public class RpcClientHandler extends ChannelDuplexHandler {
   @Override
   public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
     super.write(ctx, msg, promise);
-
-    //todo 发送完请求之后的回调
     promise.addListener(new ChannelFutureListener() {
       @Override
       public void operationComplete(ChannelFuture future) throws Exception {
-        if (msg instanceof RpcRequest) {
-          RpcRequest request = (RpcRequest) msg;
-          
-        }
+        log.debug("netty client send msg success, msg: {}", msg);
       }
     });
   }

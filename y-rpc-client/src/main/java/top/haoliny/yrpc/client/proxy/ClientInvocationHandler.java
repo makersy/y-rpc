@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import top.haoliny.yrpc.client.RpcClient;
 import top.haoliny.yrpc.common.config.ProtocolConfig;
 import top.haoliny.yrpc.common.config.RegistryConfig;
+import top.haoliny.yrpc.common.model.RpcRequest;
 import top.haoliny.yrpc.common.model.RpcResponse;
 import top.haoliny.yrpc.common.registry.Registry0;
 import top.haoliny.yrpc.common.util.SpringUtil;
@@ -33,17 +34,28 @@ public class ClientInvocationHandler<T> implements InvocationHandler {
 
   @Override
   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-    Class<?> className = method.getDeclaringClass();
+    Class<?> methodClass = method.getDeclaringClass();
     String methodName = method.getName();
     Class<?>[] parameterTypes = method.getParameterTypes();
 
     if (rpcClient == null) {
       initRpcClient();
     }
-    RpcResponse rpcResponse = rpcClient.send(className.getName(), methodName, parameterTypes, args);
-    log.debug("Get rpcResponse: {}", rpcResponse);
 
-    return rpcResponse.getResult();
+    RpcRequest request = new RpcRequest();
+    request.setClassName(methodClass.getName());
+    request.setMethodName(methodName);
+    request.setParameterTypes(parameterTypes);
+    request.setParameters(args);
+
+    try {
+      RpcResponse rpcResponse = rpcClient.send(request);
+      log.debug("Get rpcResponse: {}", rpcResponse);
+      return rpcResponse.getResult();
+    } catch (Exception e) {
+      log.error("ClientInvocationHandler send request failed", e);
+      return RpcResponse.buildErrorResponse(request, e);
+    }
   }
 
   private void initRpcClient() {
@@ -54,6 +66,7 @@ public class ClientInvocationHandler<T> implements InvocationHandler {
                 SpringUtil.getBean(Registry0.class),
                 SpringUtil.getBean(RegistryConfig.class),
                 SpringUtil.getBean(ProtocolConfig.class));
+        log.debug("init rpc client success, class: {}", clz);
       }
     } finally {
       lock.unlock();

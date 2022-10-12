@@ -2,7 +2,10 @@ package top.haoliny.yrpc.client;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
-import io.netty.channel.*;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
@@ -26,6 +29,7 @@ import top.haoliny.yrpc.common.serialize.SerializationFactory;
 import top.haoliny.yrpc.common.util.CommonUtil;
 import top.haoliny.yrpc.common.util.SpringUtil;
 
+import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.locks.ReentrantLock;
@@ -58,7 +62,9 @@ public class RpcClient {
             SpringUtil.getBean(ProtocolConfig.class));
   }
 
-  public RpcClient(Registry0 registry0, RegistryConfig registryConfig, ProtocolConfig protocolConfig) {
+  public RpcClient(Registry0 registry0,
+                   RegistryConfig registryConfig,
+                   ProtocolConfig protocolConfig) {
     this.registry0 = registry0;
     this.registryConfig = registryConfig;
     this.protocolConfig = protocolConfig;
@@ -66,10 +72,6 @@ public class RpcClient {
   }
 
   public void init() {
-    initBootStrap(new RpcClientHandler());
-  }
-
-  private void initBootStrap(ChannelDuplexHandler clientHandler) {
     // 创建并配置客户端Bootstrap
     bootstrap = new Bootstrap();
     bootstrap
@@ -93,12 +95,12 @@ public class RpcClient {
                         .addLast(new LengthFieldBasedFrameDecoder(65536, 0, 4))
                         .addLast("yrpc-encoder", new RpcEncoder(SerializationFactory.get(protocolConfig.getSerialization()), RpcRequest.class))
                         .addLast("yrpc-decoder", new RpcDecoder(SerializationFactory.get(protocolConfig.getSerialization()), RpcResponse.class))
-                        .addLast("yrpc-client-handler", clientHandler);
+                        .addLast("yrpc-client-handler", SpringUtil.getBean(RpcClientHandler.class));
               }
             });
   }
 
-  public RpcResponse send(String className, String methodName, Class<?>[] parameterTypes, Object[] parameters) throws Exception {
+  public RpcResponse send(RpcRequest request) throws Exception {
     List<String> nodeList = registry0.getNodeList(registryConfig.getTopic());
     if (CollectionUtils.isEmpty(nodeList)) {
       throw new YrpcException(ExceptionCode.NO_PROVIDERS, "no provider");
@@ -107,12 +109,6 @@ public class RpcClient {
     // 随机一个节点
     // todo 负载均衡
     String serverAddr = nodeList.get(ThreadLocalRandom.current().nextInt(nodeList.size()));
-
-    RpcRequest request = new RpcRequest();
-    request.setClassName(className);
-    request.setMethodName(methodName);
-    request.setParameterTypes(parameterTypes);
-    request.setParameters(parameters);
 
     // 写入channel缓冲区
     Channel channel = getChannel(serverAddr);
@@ -138,19 +134,21 @@ public class RpcClient {
     }
 
     // 建立连接
-    String[] split = addr.split(":");
-    ChannelFuture future = bootstrap.connect(split[0], Integer.parseInt(split[1]));
+    InetSocketAddress socketAddress = CommonUtil.convertInetSocketAddress(addr);
+    ChannelFuture future = bootstrap.connect(socketAddress);
 
     // 阻塞等待结果
     boolean completed = future.awaitUninterruptibly(CLIENT_CONNECT_TIMEOUT, MILLISECONDS);
     if (completed && future.isSuccess()) {
       // 如果channel池有已建立的连接，就舍弃掉这次新建立的channel，使用已有channel
-      channel = ChannelCache.putIfAbsent(CommonUtil.getRemoteAddr(future.channel()), future.channel());
-      if (channel == null) {
+      Channel before = ChannelCache.get(addr);
+      if (before == null || !before.isActive()) {
         channel = future.channel();
       } else {
+        channel = before;
         future.channel().close();
       }
+      log.info("netty connect to {} success!", CommonUtil.getRemoteAddr(channel));
     } else if (future.cause() != null) {
       // 连接异常
       throw new YrpcException(ExceptionCode.CLIENT_CONNECT_FAILED, future.cause());

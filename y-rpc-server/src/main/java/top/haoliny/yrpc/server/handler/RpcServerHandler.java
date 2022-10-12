@@ -33,6 +33,8 @@ public class RpcServerHandler extends ChannelInboundHandlerAdapter {
   public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
     if (msg instanceof RpcRequest) {
       RpcRequest request = (RpcRequest) msg;
+      log.debug("netty server received request: {}", request);
+
       // 线程
       serverThreadPool.submit(new RpcRunnable(request, ctx));
     }

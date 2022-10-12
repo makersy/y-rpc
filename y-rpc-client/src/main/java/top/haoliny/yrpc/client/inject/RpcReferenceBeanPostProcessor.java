@@ -26,16 +26,15 @@ public class RpcReferenceBeanPostProcessor implements BeanPostProcessor {
     Class<?> clz = bean.getClass();
     log.info("RpcReferenceBeanPostProcessor class: {}", clz.getName());
     for (Field field : clz.getDeclaredFields()) {
-      RpcReference rpcReference = AnnotationUtils.getAnnotation(field, RpcReference.class);
-      if (rpcReference == null) {
+      if (AnnotationUtils.getAnnotation(field, RpcReference.class) == null) {
         continue;
       }
+
       log.info("RpcReferenceBeanPostProcessor find RpcReference, class: {}, field: {}, field type: {}", clz.getName(), field.getName(), field.getType());
-      field.setAccessible(true);
+
       try {
-        RpcReferenceFactoryBean<?> factoryBean = new RpcReferenceFactoryBean<>(field.getType());
+        field.setAccessible(true);
         Object proxyBean = ProxyFactory.getProxyInstance(field.getType());
-//        Object proxyBean = factoryBean.getObject();
         ReflectionUtils.setField(field, bean, proxyBean);
       } catch (Exception e) {
         log.error("error occurred when inject reference bean", e);

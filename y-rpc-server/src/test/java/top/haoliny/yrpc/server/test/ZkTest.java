@@ -3,6 +3,7 @@ package top.haoliny.yrpc.server.test;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import top.haoliny.yrpc.common.config.RegistryConfig;
+import top.haoliny.yrpc.common.config.RpcServerConfig;
 import top.haoliny.yrpc.common.config.ZookeeperConfig;
 import top.haoliny.yrpc.common.registry.ZookeeperRegistry0;
 
@@ -24,7 +25,9 @@ public class ZkTest {
     ZookeeperConfig zookeeperConfig = new ZookeeperConfig();
     zookeeperConfig.setAddr("127.0.0.1:2181");
 
-    registry0 = new ZookeeperRegistry0(registryConfig, zookeeperConfig);
+    RpcServerConfig serverConfig = new RpcServerConfig();
+
+    registry0 = new ZookeeperRegistry0(registryConfig, zookeeperConfig, serverConfig);
 
     registry0.init();
   }

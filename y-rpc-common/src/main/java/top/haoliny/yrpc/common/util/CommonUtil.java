@@ -22,4 +22,9 @@ public class CommonUtil {
     InetSocketAddress socketAddress = (InetSocketAddress) channel.remoteAddress();
     return socketAddress.getHostString() + ":" + socketAddress.getPort();
   }
+
+  public static InetSocketAddress convertInetSocketAddress(String addrAndPort) {
+    String[] split = addrAndPort.split(":");
+    return InetSocketAddress.createUnresolved(split[0], Integer.parseInt(split[1]));
+  }
 }

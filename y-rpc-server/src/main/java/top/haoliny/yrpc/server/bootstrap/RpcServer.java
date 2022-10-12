@@ -17,14 +17,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import top.haoliny.yrpc.common.codec.RpcDecoder;
 import top.haoliny.yrpc.common.codec.RpcEncoder;
+import top.haoliny.yrpc.common.config.RpcServerConfig;
 import top.haoliny.yrpc.common.model.RpcRequest;
 import top.haoliny.yrpc.common.model.RpcResponse;
-import top.haoliny.yrpc.common.serialize.JsonSerialization;
-import top.haoliny.yrpc.server.config.RpcServerConfig;
-import top.haoliny.yrpc.server.handler.RpcServerHandler;
 import top.haoliny.yrpc.common.registry.Registry0;
+import top.haoliny.yrpc.common.serialize.JsonSerialization;
+import top.haoliny.yrpc.server.handler.RpcServerHandler;
 
 import javax.annotation.Nonnull;
+import javax.annotation.PreDestroy;
 
 /**
  * @author yhl
@@ -44,6 +45,7 @@ public class RpcServer {
   private ServerBootstrap bootstrap;
   private EventLoopGroup bossGroup;
   private EventLoopGroup workerGroup;
+  private Channel serverChannel;
 
   public void start() throws InterruptedException {
     // 启动netty server
@@ -71,7 +73,8 @@ public class RpcServer {
               }
             });
 
-    bootstrap.bind(serverConfig.getPort()).sync();
+    serverChannel = bootstrap.bind(serverConfig.getPort()).sync().channel().closeFuture().channel();
+    log.debug("netty succeed to bind port {}", serverConfig.getPort());
 
     // 注册
     try {
@@ -81,4 +84,13 @@ public class RpcServer {
     }
   }
 
+  @PreDestroy
+  public void stop() {
+    if (serverChannel != null) {
+      serverChannel.close();
+      if (serverChannel.parent() != null) {
+        serverChannel.parent().close();
+      }
+    }
+  }
 }

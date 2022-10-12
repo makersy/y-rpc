@@ -9,10 +9,10 @@ import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.ZooDefs;
 import org.apache.zookeeper.data.Stat;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import top.haoliny.yrpc.common.config.RegistryConfig;
+import top.haoliny.yrpc.common.config.RpcServerConfig;
 import top.haoliny.yrpc.common.config.ZookeeperConfig;
 import top.haoliny.yrpc.common.constants.Constants;
 
@@ -34,9 +34,7 @@ public class ZookeeperRegistry0 implements Registry0 {
 
   private final RegistryConfig registryConfig;
   private final ZookeeperConfig zkConfig;
-
-  @Value("${server.port}")
-  private int serverPort;
+  private final RpcServerConfig serverConfig;
 
   private CuratorFramework client;
 
@@ -69,7 +67,7 @@ public class ZookeeperRegistry0 implements Registry0 {
 
     // 注册provider
     InetAddress addr = InetAddress.getLocalHost();
-    path += "/" + addr.getHostAddress() + ":" + serverPort;
+    path += "/" + addr.getHostAddress() + ":" + serverConfig.getPort();
     stat = client.checkExists().forPath(path);
     if (stat == null) {
       client.create()
@@ -87,8 +85,9 @@ public class ZookeeperRegistry0 implements Registry0 {
       return Collections.emptyList();
     }
 
-    byte[] getData = client.getData().forPath(path);
-    System.out.println(getData);
-    return client.getChildren().forPath(path);
+    List<String> nodeList = client.getChildren().forPath(path);
+    log.debug("Get {} children success, nodeList: {}", path, nodeList);
+
+    return nodeList;
   }
 }
