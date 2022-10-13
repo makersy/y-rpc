@@ -7,6 +7,7 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import top.haoliny.yrpc.common.model.Result;
 import top.haoliny.yrpc.common.model.RpcRequest;
 import top.haoliny.yrpc.common.model.RpcResponse;
 import top.haoliny.yrpc.common.util.SpringUtil;
@@ -51,7 +52,7 @@ public class RpcServerHandler extends ChannelInboundHandlerAdapter {
       response.setRequestId(request.getRequestId());
 
       try {
-        Object invokeResult = invoke(request);
+        Result<?> invokeResult = (Result<?>) invoke(request);
         response.setResult(invokeResult);
       } catch (Throwable e) {
         response.setThrowable(e);

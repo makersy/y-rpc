@@ -1,4 +1,4 @@
-package top.haoliny.yrpc.common.registry;
+package top.haoliny.yrpc.registry;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,10 +14,10 @@ import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooDefs;
 import org.apache.zookeeper.ZooKeeper;
 import org.springframework.beans.factory.annotation.Value;
-import top.haoliny.yrpc.common.config.RegistryConfig;
-import top.haoliny.yrpc.common.config.ZookeeperConfig;
 import top.haoliny.yrpc.common.constants.Constants;
 import top.haoliny.yrpc.common.model.URLAddress;
+import top.haoliny.yrpc.config.RegistryConfig;
+import top.haoliny.yrpc.config.ZookeeperConfig;
 
 import java.net.InetAddress;
 import java.util.List;

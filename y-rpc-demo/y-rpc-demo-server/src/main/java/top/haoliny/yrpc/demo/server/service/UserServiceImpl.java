@@ -2,6 +2,7 @@ package top.haoliny.yrpc.demo.server.service;
 
 import lombok.extern.slf4j.Slf4j;
 import top.haoliny.yrpc.common.annotation.RpcService;
+import top.haoliny.yrpc.common.model.Result;
 import top.haoliny.yrpc.demo.api.UserService;
 import top.haoliny.yrpc.demo.api.model.User;
 
@@ -16,13 +17,13 @@ import top.haoliny.yrpc.demo.api.model.User;
 public class UserServiceImpl implements UserService {
 
   @Override
-  public boolean addUser(User user) {
+  public Result<Boolean> addUser(User user) {
     log.info("addUser request: {}, response: {}", user, true);
     if (user != null) {
       if (user.getAge() < 0) {
-        return false;
+        return Result.success(false);
       }
     }
-    return true;
+    return Result.success(true);
   }
 }

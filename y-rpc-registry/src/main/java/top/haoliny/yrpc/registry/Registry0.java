@@ -1,4 +1,4 @@
-package top.haoliny.yrpc.common.registry;
+package top.haoliny.yrpc.registry;
 
 import java.util.List;
 

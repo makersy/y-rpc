@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import top.haoliny.yrpc.common.annotation.RpcReference;
+import top.haoliny.yrpc.common.model.Result;
 import top.haoliny.yrpc.demo.api.HelloService;
 import top.haoliny.yrpc.demo.api.UserService;
 import top.haoliny.yrpc.demo.api.model.User;
@@ -32,9 +33,9 @@ public class CallServerService {
   @ResponseBody
   public String callHello(@PathVariable("name") String name) {
     log.info("callHello request: {}", name);
-    String resp = helloService.sayHello(name);
+    Result<String> resp = helloService.sayHello(name);
     log.info("callHello response: {}", resp);
-    return resp;
+    return resp.getData();
   }
 
   @GetMapping("/addUser")
@@ -46,9 +47,9 @@ public class CallServerService {
     user.setId((long) id.addAndGet(1));
     user.setName(name);
     user.setAge(age);
-    boolean resp = userService.addUser(user);
+    Result<Boolean> resp = userService.addUser(user);
 
     log.info("callAddUser response: {}", resp);
-    return Boolean.toString(resp);
+    return resp.getData() != null ? Boolean.toString(resp.getData()) : "null";
   }
 }

@@ -2,10 +2,10 @@ package top.haoliny.yrpc.server.test;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import top.haoliny.yrpc.common.config.RegistryConfig;
-import top.haoliny.yrpc.common.config.RpcServerConfig;
-import top.haoliny.yrpc.common.config.ZookeeperConfig;
-import top.haoliny.yrpc.common.registry.ZookeeperRegistry0;
+import top.haoliny.yrpc.config.RegistryConfig;
+import top.haoliny.yrpc.config.RpcServerConfig;
+import top.haoliny.yrpc.config.ZookeeperConfig;
+import top.haoliny.yrpc.registry.ZookeeperRegistry0;
 
 /**
  * @author yhl

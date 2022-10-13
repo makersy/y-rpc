@@ -1,4 +1,4 @@
-package top.haoliny.yrpc.common.config;
+package top.haoliny.yrpc.config;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;

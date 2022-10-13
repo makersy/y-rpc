@@ -2,12 +2,13 @@ package top.haoliny.yrpc.client.proxy;
 
 import lombok.extern.slf4j.Slf4j;
 import top.haoliny.yrpc.client.RpcClient;
-import top.haoliny.yrpc.common.config.ProtocolConfig;
-import top.haoliny.yrpc.common.config.RegistryConfig;
+import top.haoliny.yrpc.common.model.Result;
 import top.haoliny.yrpc.common.model.RpcRequest;
 import top.haoliny.yrpc.common.model.RpcResponse;
-import top.haoliny.yrpc.common.registry.Registry0;
 import top.haoliny.yrpc.common.util.SpringUtil;
+import top.haoliny.yrpc.config.ProtocolConfig;
+import top.haoliny.yrpc.config.RegistryConfig;
+import top.haoliny.yrpc.registry.Registry0;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -51,6 +52,11 @@ public class ClientInvocationHandler<T> implements InvocationHandler {
     try {
       RpcResponse rpcResponse = rpcClient.send(request);
       log.debug("Get rpcResponse: {}", rpcResponse);
+
+      if (rpcResponse.getThrowable() != null) {
+        return Result.catchException(rpcResponse.getThrowable());
+      }
+
       return rpcResponse.getResult();
     } catch (Exception e) {
       log.error("ClientInvocationHandler send request failed", e);

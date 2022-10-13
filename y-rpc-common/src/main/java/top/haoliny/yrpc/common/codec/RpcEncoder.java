@@ -37,7 +37,7 @@ public class RpcEncoder extends MessageToByteEncoder {
   @Override
   protected void encode(ChannelHandlerContext ctx, Object msg, ByteBuf out) throws Exception {
     try {
-      checkNotNull(clz, "clz == nil");
+      checkNotNull(clz, "RpcEncoder clz == nil");
 
       // 序列化
       byte[] bytes = serialization.serialize(msg);

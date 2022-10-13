@@ -1,6 +1,7 @@
 package top.haoliny.yrpc.demo.server.service;
 
 import top.haoliny.yrpc.common.annotation.RpcService;
+import top.haoliny.yrpc.common.model.Result;
 import top.haoliny.yrpc.demo.api.HelloService;
 
 /**
@@ -12,7 +13,7 @@ import top.haoliny.yrpc.demo.api.HelloService;
 @RpcService
 public class HelloServiceImpl implements HelloService {
   @Override
-  public String sayHello(String user) {
-    return "Hello, " + user;
+  public Result<String> sayHello(String user) {
+    return Result.success("Hello, " + user);
   }
 }

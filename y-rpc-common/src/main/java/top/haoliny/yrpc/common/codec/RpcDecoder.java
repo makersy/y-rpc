@@ -45,7 +45,6 @@ public class RpcDecoder extends ByteToMessageDecoder {
     byte[] data = new byte[dataLen];
     in.readBytes(data);
     // 反序列化
-    Object obj = serialization.deserialize(data, clz);
-    out.add(obj);
+    out.add(serialization.deserialize(data, clz));
   }
 }

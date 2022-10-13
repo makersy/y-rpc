@@ -1,4 +1,4 @@
-package top.haoliny.yrpc.common.registry;
+package top.haoliny.yrpc.registry;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,10 +11,10 @@ import org.apache.zookeeper.ZooDefs;
 import org.apache.zookeeper.data.Stat;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
-import top.haoliny.yrpc.common.config.RegistryConfig;
-import top.haoliny.yrpc.common.config.RpcServerConfig;
-import top.haoliny.yrpc.common.config.ZookeeperConfig;
 import top.haoliny.yrpc.common.constants.Constants;
+import top.haoliny.yrpc.config.RegistryConfig;
+import top.haoliny.yrpc.config.RpcServerConfig;
+import top.haoliny.yrpc.config.ZookeeperConfig;
 
 import javax.annotation.PostConstruct;
 import java.net.InetAddress;
@@ -24,7 +24,7 @@ import java.util.List;
 /**
  * @author yhl
  * @date 2022/9/20
- * @description 每个服务定义各自的topic，将服务provider节点信息注册到对应topic下
+ * @description 初版注册中心。每个<b>服务</b>定义各自的topic，将服务provider节点信息注册到对应topic下
  */
 @Service
 @Slf4j

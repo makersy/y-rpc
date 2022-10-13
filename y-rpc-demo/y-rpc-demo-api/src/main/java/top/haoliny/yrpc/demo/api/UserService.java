@@ -1,5 +1,6 @@
 package top.haoliny.yrpc.demo.api;
 
+import top.haoliny.yrpc.common.model.Result;
 import top.haoliny.yrpc.demo.api.model.User;
 
 /**
@@ -9,5 +10,5 @@ import top.haoliny.yrpc.demo.api.model.User;
  */
 
 public interface UserService {
-  boolean addUser(User user);
+  Result<Boolean> addUser(User user);
 }

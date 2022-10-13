@@ -7,16 +7,26 @@
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
-  <artifactId>y-rpc-demo</artifactId>
+  <artifactId>y-rpc-registry</artifactId>
   <packaging>jar</packaging>
 
-  <name>y-rpc-demo</name>
+  <name>y-rpc-registry</name>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
   <dependencies>
-
+    <dependency>
+      <groupId>top.haoliny</groupId>
+      <artifactId>y-rpc-config</artifactId>
+      <version>${revision}</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>top.haoliny</groupId>
+      <artifactId>y-rpc-common</artifactId>
+      <version>${revision}</version>
+    </dependency>
   </dependencies>
 </project>

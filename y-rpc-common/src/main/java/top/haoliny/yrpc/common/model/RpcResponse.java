@@ -22,7 +22,7 @@ public class RpcResponse {
   /**
    * 返回值
    */
-  private Object result;
+  private Result<?> result;
 
   /**
    * @return 错误响应

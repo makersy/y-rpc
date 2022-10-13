@@ -17,11 +17,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import top.haoliny.yrpc.common.codec.RpcDecoder;
 import top.haoliny.yrpc.common.codec.RpcEncoder;
-import top.haoliny.yrpc.common.config.RpcServerConfig;
 import top.haoliny.yrpc.common.model.RpcRequest;
 import top.haoliny.yrpc.common.model.RpcResponse;
-import top.haoliny.yrpc.common.registry.Registry0;
-import top.haoliny.yrpc.common.serialize.JsonSerialization;
+import top.haoliny.yrpc.common.serialize.SerializationFactory;
+import top.haoliny.yrpc.config.ProtocolConfig;
+import top.haoliny.yrpc.config.RpcServerConfig;
+import top.haoliny.yrpc.registry.Registry0;
 import top.haoliny.yrpc.server.handler.RpcServerHandler;
 
 import javax.annotation.Nonnull;
@@ -40,6 +41,7 @@ public class RpcServer {
 
   private final RpcServerHandler rpcServerHandler;
   private final RpcServerConfig serverConfig;
+  private final ProtocolConfig protocolConfig;
   private final Registry0 registry;
 
   private ServerBootstrap bootstrap;
@@ -67,9 +69,9 @@ public class RpcServer {
               protected void initChannel(@Nonnull Channel channel) throws Exception {
                 channel.pipeline()
                         .addLast(new LengthFieldBasedFrameDecoder(65536, 0, 4))
-                        .addLast(new RpcEncoder(new JsonSerialization(), RpcResponse.class))
-                        .addLast(new RpcDecoder(new JsonSerialization(), RpcRequest.class))
-                        .addLast(rpcServerHandler);
+                        .addLast("yrpc-encoder", new RpcEncoder(SerializationFactory.get(protocolConfig.getSerialization()), RpcResponse.class))
+                        .addLast("yrpc-decoder", new RpcDecoder(SerializationFactory.get(protocolConfig.getSerialization()), RpcRequest.class))
+                        .addLast("yrpc-server-handler", rpcServerHandler);
               }
             });
 
