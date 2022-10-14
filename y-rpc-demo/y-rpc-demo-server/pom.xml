@@ -1,16 +1,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
-    <artifactId>y-rpc</artifactId>
+    <artifactId>y-rpc-demo</artifactId>
     <groupId>top.haoliny</groupId>
     <version>${revision}</version>
-    <relativePath>../../pom.xml</relativePath>
   </parent>
   <modelVersion>4.0.0</modelVersion>
-
   <artifactId>y-rpc-demo-server</artifactId>
   <packaging>jar</packaging>
-
   <name>y-rpc-demo-server</name>
 
   <properties>
@@ -21,12 +18,12 @@
     <dependency>
       <groupId>top.haoliny</groupId>
       <artifactId>y-rpc-demo-api</artifactId>
-      <version>${revision}</version>
+      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>top.haoliny</groupId>
       <artifactId>y-rpc-server</artifactId>
-      <version>${revision}</version>
+      <version>${project.version}</version>
     </dependency>
   </dependencies>
 

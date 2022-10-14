@@ -15,9 +15,6 @@
     <module>y-rpc-server</module>
     <module>y-rpc-client</module>
     <module>y-rpc-demo</module>
-    <module>y-rpc-demo/y-rpc-demo-api</module>
-    <module>y-rpc-demo/y-rpc-demo-server</module>
-    <module>y-rpc-demo/y-rpc-demo-client</module>
     <module>y-rpc-config</module>
     <module>y-rpc-registry</module>
   </modules>

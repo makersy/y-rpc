@@ -20,10 +20,14 @@ import java.util.List;
 @RequiredArgsConstructor
 public class RpcDecoder extends ByteToMessageDecoder {
 
-  // 序列化器
+  /**
+   * 序列化器
+   */
   private final Serialization serialization;
 
-  // 序列化对象类型
+  /**
+   * 序列化对象类型
+   */
   private final Class<?> clz;
 
   @Override

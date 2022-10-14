@@ -9,7 +9,6 @@
 
   <artifactId>y-rpc-config</artifactId>
   <packaging>jar</packaging>
-
   <name>y-rpc-config</name>
 
   <properties>

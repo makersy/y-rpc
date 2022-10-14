@@ -76,7 +76,7 @@ public class RpcServerHandler extends ChannelInboundHandlerAdapter {
     Object serviceBean = SpringUtil.getBean(serviceClass);
     Preconditions.checkNotNull(serviceBean, String.format("failed to find service bean, className: %s", request.getClassName()));
 
-    Method method = serviceClass.getMethod(request.getMethodName(), request.getParameterTypes());
+    Method method = serviceClass.getDeclaredMethod(request.getMethodName(), request.getParameterTypes());
     Preconditions.checkNotNull(method, String.format("failed to find service method, methodName: %s", request.getMethodName()));
 
     return method.invoke(serviceBean, request.getParameters());

@@ -1,6 +1,7 @@
 package top.haoliny.yrpc.common.model;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import top.haoliny.yrpc.common.model.enums.ErrorCode;
 
 /**
@@ -10,6 +11,7 @@ import top.haoliny.yrpc.common.model.enums.ErrorCode;
  */
 
 @Data
+@NoArgsConstructor
 public class Result<T> {
 
   private int code;
