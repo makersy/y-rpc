@@ -2,7 +2,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
     <artifactId>y-rpc</artifactId>
-    <groupId>top.haoliny</groupId>
+    <groupId>io.github.makersy</groupId>
     <version>${revision}</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
@@ -17,13 +17,13 @@
 
   <dependencies>
     <dependency>
-      <groupId>top.haoliny</groupId>
+      <groupId>io.github.makersy</groupId>
       <artifactId>y-rpc-config</artifactId>
       <version>${project.parent.version}</version>
       <optional>true</optional>
     </dependency>
     <dependency>
-      <groupId>top.haoliny</groupId>
+      <groupId>io.github.makersy</groupId>
       <artifactId>y-rpc-common</artifactId>
       <version>${project.parent.version}</version>
     </dependency>
