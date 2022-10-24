@@ -1,23 +1,23 @@
 package io.github.makersy.yrpc.server.handler;
 
 import com.google.common.base.Preconditions;
+import io.github.makersy.yrpc.common.model.Result;
+import io.github.makersy.yrpc.common.model.RpcRequest;
+import io.github.makersy.yrpc.common.model.RpcResponse;
+import io.github.makersy.yrpc.server.spring.bean.RpcServiceCache;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import io.github.makersy.yrpc.common.model.Result;
-import io.github.makersy.yrpc.common.model.RpcRequest;
-import io.github.makersy.yrpc.common.model.RpcResponse;
-import io.github.makersy.yrpc.common.util.SpringUtil;
 
 import javax.annotation.Resource;
 import java.lang.reflect.Method;
 import java.util.concurrent.ExecutorService;
 
 /**
- * @author yhl
+ * @author makersy
  * @date 2022/9/15
  * @description
  */
@@ -29,6 +29,9 @@ public class RpcServerHandler extends ChannelInboundHandlerAdapter {
 
   @Resource(name = "serverThreadPool")
   private ExecutorService serverThreadPool;
+
+  @Resource
+  private RpcServiceCache rpcServiceCache;
 
   @Override
   public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
@@ -70,13 +73,10 @@ public class RpcServerHandler extends ChannelInboundHandlerAdapter {
    * @throws Throwable 可能出现的异常
    */
   private Object invoke(RpcRequest request) throws Throwable {
-    //todo 避免使用forName，后续可优化。后续可在启动时加载所有rpc service，将servicename和service bean的映射缓存起来
-    Class<?> serviceClass = Class.forName(request.getClassName());
-
-    Object serviceBean = SpringUtil.getBean(serviceClass);
+    Object serviceBean = rpcServiceCache.get(request.getClassName());
     Preconditions.checkNotNull(serviceBean, String.format("failed to find service bean, className: %s", request.getClassName()));
 
-    Method method = serviceClass.getDeclaredMethod(request.getMethodName(), request.getParameterTypes());
+    Method method = serviceBean.getClass().getDeclaredMethod(request.getMethodName(), request.getParameterTypes());
     Preconditions.checkNotNull(method, String.format("failed to find service method, methodName: %s", request.getMethodName()));
 
     return method.invoke(serviceBean, request.getParameters());

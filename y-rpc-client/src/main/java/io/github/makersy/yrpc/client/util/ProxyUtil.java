@@ -5,7 +5,7 @@ import io.github.makersy.yrpc.client.proxy.ClientInvocationHandler;
 import java.lang.reflect.Proxy;
 
 /**
- * @author yhl
+ * @author makersy
  * @date 2022/10/8
  * @description
  */

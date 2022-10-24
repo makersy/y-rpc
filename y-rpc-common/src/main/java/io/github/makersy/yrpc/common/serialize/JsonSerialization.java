@@ -11,7 +11,7 @@ import java.io.IOException;
 import static com.google.common.base.Preconditions.checkState;
 
 /**
- * @author yhl
+ * @author makersy
  * @date 2022/9/14
  * @description Json序列化器
  */

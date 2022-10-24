@@ -1,11 +1,11 @@
 package io.github.makersy.yrpc.registry;
 
-import io.github.makersy.yrpc.common.model.URLAddress;
+import io.github.makersy.yrpc.common.model.URL;
 
 import java.util.List;
 
 /**
- * @author yhl
+ * @author makersy
  * @date 2022/9/20
  * @description
  */
@@ -16,5 +16,9 @@ public interface Registry {
 
   void unregisterService(String serviceName) throws Exception;
 
-  List<URLAddress> findServiceProviders(String serviceName);
+  /**
+   * @param serviceName interface name
+   * @return available provider urls
+   */
+  List<URL> findServiceProviders(String serviceName);
 }

@@ -9,7 +9,7 @@ import io.github.makersy.yrpc.server.support.NamedThreadFactory;
 import java.util.concurrent.*;
 
 /**
- * @author yhl
+ * @author makersy
  * @date 2022/9/20
  * @description
  */

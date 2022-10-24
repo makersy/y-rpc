@@ -6,7 +6,7 @@ import io.github.makersy.yrpc.common.util.CommonUtil;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * @author yhl
+ * @author makersy
  * @date 2022/9/24
  * @description client已建立channel的缓存
  */

@@ -1,5 +1,21 @@
 package io.github.makersy.yrpc.client;
 
+import io.github.makersy.yrpc.client.cache.ChannelCache;
+import io.github.makersy.yrpc.client.handler.RpcClientHandler;
+import io.github.makersy.yrpc.client.support.RpcFuture;
+import io.github.makersy.yrpc.common.codec.RpcDecoder;
+import io.github.makersy.yrpc.common.codec.RpcEncoder;
+import io.github.makersy.yrpc.common.exception.ExceptionCode;
+import io.github.makersy.yrpc.common.exception.YrpcException;
+import io.github.makersy.yrpc.common.model.RpcRequest;
+import io.github.makersy.yrpc.common.model.RpcResponse;
+import io.github.makersy.yrpc.common.model.URL;
+import io.github.makersy.yrpc.common.serialize.SerializationFactory;
+import io.github.makersy.yrpc.common.util.CommonUtil;
+import io.github.makersy.yrpc.common.util.SpringUtil;
+import io.github.makersy.yrpc.config.ProtocolConfig;
+import io.github.makersy.yrpc.config.RegistryConfig;
+import io.github.makersy.yrpc.registry.Registry;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
@@ -12,32 +28,15 @@ import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.util.concurrent.DefaultThreadFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.CollectionUtils;
-import io.github.makersy.yrpc.client.cache.ChannelCache;
-import io.github.makersy.yrpc.client.handler.RpcClientHandler;
-import io.github.makersy.yrpc.client.support.RpcFuture;
-import io.github.makersy.yrpc.common.codec.RpcDecoder;
-import io.github.makersy.yrpc.common.codec.RpcEncoder;
-import io.github.makersy.yrpc.common.exception.ExceptionCode;
-import io.github.makersy.yrpc.common.exception.YrpcException;
-import io.github.makersy.yrpc.common.model.RpcRequest;
-import io.github.makersy.yrpc.common.model.RpcResponse;
-import io.github.makersy.yrpc.common.serialize.Serialization;
-import io.github.makersy.yrpc.common.serialize.SerializationFactory;
-import io.github.makersy.yrpc.common.util.CommonUtil;
-import io.github.makersy.yrpc.common.util.SpringUtil;
-import io.github.makersy.yrpc.config.ProtocolConfig;
-import io.github.makersy.yrpc.config.RegistryConfig;
-import io.github.makersy.yrpc.registry.Registry0;
 
 import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.locks.ReentrantLock;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 /**
- * @author yhl
+ * @author makersy
  * @date 2022/9/23
  * @description
  */
@@ -45,27 +44,24 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 @Slf4j
 public class RpcClient {
 
-  private final Registry0 registry0;
+  private final Registry registry;
   private final RegistryConfig registryConfig;
   private final ProtocolConfig protocolConfig;
 
   private static final int CLIENT_CONNECT_TIMEOUT = 3000;
-  private static final ReentrantLock LOCK = new ReentrantLock();
 
   private Bootstrap bootstrap;
-  private Serialization serialization;
-  private volatile Channel channel;
 
   public RpcClient() {
-    this(SpringUtil.getBean(Registry0.class),
+    this(SpringUtil.getBean(Registry.class),
             SpringUtil.getBean(RegistryConfig.class),
             SpringUtil.getBean(ProtocolConfig.class));
   }
 
-  public RpcClient(Registry0 registry0,
+  public RpcClient(Registry registry,
                    RegistryConfig registryConfig,
                    ProtocolConfig protocolConfig) {
-    this.registry0 = registry0;
+    this.registry = registry;
     this.registryConfig = registryConfig;
     this.protocolConfig = protocolConfig;
     init();
@@ -101,17 +97,17 @@ public class RpcClient {
   }
 
   public RpcResponse send(RpcRequest request) throws Exception {
-    List<String> nodeList = registry0.getNodeList(registryConfig.getTopic());
-    if (CollectionUtils.isEmpty(nodeList)) {
+    List<URL> serviceProviders = registry.findServiceProviders(request.getClassName());
+    if (CollectionUtils.isEmpty(serviceProviders)) {
       throw new YrpcException(ExceptionCode.NO_PROVIDERS, "no provider");
     }
 
     // 随机一个节点
     // todo 负载均衡
-    String serverAddr = nodeList.get(ThreadLocalRandom.current().nextInt(nodeList.size()));
+    URL serviceUrl = serviceProviders.get(ThreadLocalRandom.current().nextInt(serviceProviders.size()));
 
     // 写入channel缓冲区
-    Channel channel = getChannel(serverAddr);
+    Channel channel = getChannel(serviceUrl.getRawAddress());
     channel.writeAndFlush(request).await();
 
     RpcFuture rpcFuture = new RpcFuture(request);

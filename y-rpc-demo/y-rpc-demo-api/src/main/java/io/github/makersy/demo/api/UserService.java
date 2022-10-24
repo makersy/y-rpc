@@ -4,7 +4,7 @@ import io.github.makersy.demo.api.model.User;
 import io.github.makersy.yrpc.common.model.Result;
 
 /**
- * @author yhl
+ * @author makersy
  * @date 2022/10/12
  * @description
  */

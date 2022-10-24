@@ -1,5 +1,13 @@
 package io.github.makersy.yrpc.server.bootstrap;
 
+import io.github.makersy.yrpc.common.codec.RpcDecoder;
+import io.github.makersy.yrpc.common.codec.RpcEncoder;
+import io.github.makersy.yrpc.common.model.RpcRequest;
+import io.github.makersy.yrpc.common.model.RpcResponse;
+import io.github.makersy.yrpc.common.serialize.SerializationFactory;
+import io.github.makersy.yrpc.config.ProtocolConfig;
+import io.github.makersy.yrpc.config.RpcServerConfig;
+import io.github.makersy.yrpc.server.handler.RpcServerHandler;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
@@ -15,21 +23,12 @@ import io.netty.util.concurrent.DefaultThreadFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import io.github.makersy.yrpc.common.codec.RpcDecoder;
-import io.github.makersy.yrpc.common.codec.RpcEncoder;
-import io.github.makersy.yrpc.common.model.RpcRequest;
-import io.github.makersy.yrpc.common.model.RpcResponse;
-import io.github.makersy.yrpc.common.serialize.SerializationFactory;
-import io.github.makersy.yrpc.config.ProtocolConfig;
-import io.github.makersy.yrpc.config.RpcServerConfig;
-import io.github.makersy.yrpc.registry.Registry0;
-import io.github.makersy.yrpc.server.handler.RpcServerHandler;
 
 import javax.annotation.Nonnull;
 import javax.annotation.PreDestroy;
 
 /**
- * @author yhl
+ * @author makersy
  * @date 2022/9/15
  * @description
  */
@@ -40,20 +39,16 @@ import javax.annotation.PreDestroy;
 public class RpcServer {
 
   private final RpcServerHandler rpcServerHandler;
-  private final RpcServerConfig serverConfig;
+  private final RpcServerConfig rpcServerConfig;
   private final ProtocolConfig protocolConfig;
-  private final Registry0 registry;
 
-  private ServerBootstrap bootstrap;
-  private EventLoopGroup bossGroup;
-  private EventLoopGroup workerGroup;
   private Channel serverChannel;
 
   public void start() throws InterruptedException {
     // 启动netty server
-    bootstrap = new ServerBootstrap();
-    bossGroup = new NioEventLoopGroup(1, new DefaultThreadFactory("NettyServer"));
-    workerGroup = new NioEventLoopGroup();
+    ServerBootstrap bootstrap = new ServerBootstrap();
+    EventLoopGroup bossGroup = new NioEventLoopGroup(1, new DefaultThreadFactory("NettyServer"));
+    EventLoopGroup workerGroup = new NioEventLoopGroup();
 
     bootstrap.group(bossGroup, workerGroup)
             .channel(NioServerSocketChannel.class)
@@ -75,15 +70,8 @@ public class RpcServer {
               }
             });
 
-    serverChannel = bootstrap.bind(serverConfig.getPort()).sync().channel().closeFuture().channel();
-    log.debug("netty succeed to bind port {}", serverConfig.getPort());
-
-    // 注册
-    try {
-      registry.registerProvider();
-    } catch (Throwable throwable) {
-      throw new RuntimeException(throwable);
-    }
+    serverChannel = bootstrap.bind(rpcServerConfig.getPort()).sync().channel().closeFuture().channel();
+    log.debug("netty succeed to bind port {}", rpcServerConfig.getPort());
   }
 
   @PreDestroy

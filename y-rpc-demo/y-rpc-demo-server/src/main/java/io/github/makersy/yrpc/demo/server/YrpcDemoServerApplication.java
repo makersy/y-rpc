@@ -1,14 +1,14 @@
 package io.github.makersy.yrpc.demo.server;
 
+import io.github.makersy.yrpc.server.bootstrap.RpcServer;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
-import io.github.makersy.yrpc.server.bootstrap.RpcServer;
 
 import java.util.concurrent.CountDownLatch;
 
 /**
- * @author yhl
+ * @author makersy
  * @date 2022/9/19
  * @description
  */

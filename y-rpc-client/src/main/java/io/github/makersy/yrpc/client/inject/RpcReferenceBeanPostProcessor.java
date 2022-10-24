@@ -12,7 +12,7 @@ import io.github.makersy.yrpc.common.annotation.RpcReference;
 import java.lang.reflect.Field;
 
 /**
- * @author yhl
+ * @author makersy
  * @date 2022/10/8
  * @description 识别 {@code @RpcReference} 注解的字段，生成对应的代理对象并注入
  */
@@ -24,13 +24,12 @@ public class RpcReferenceBeanPostProcessor implements BeanPostProcessor {
   @Override
   public Object postProcessAfterInitialization (Object bean, String beanName) throws BeansException {
     Class<?> clz = bean.getClass();
-    log.info("RpcReferenceBeanPostProcessor class: {}", clz.getName());
     for (Field field : clz.getDeclaredFields()) {
       if (AnnotationUtils.getAnnotation(field, RpcReference.class) == null) {
         continue;
       }
 
-      log.info("RpcReferenceBeanPostProcessor find RpcReference, class: {}, field: {}, field type: {}", clz.getName(), field.getName(), field.getType());
+      log.info("RpcReferenceBeanPostProcessor find @RpcReference, class: {}, field: {}, field type: {}", clz.getName(), field.getName(), field.getType());
 
       try {
         field.setAccessible(true);

@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * @author yhl
+ * @author makersy
  * @date 2022/9/29
  * @description
  */
@@ -13,8 +13,11 @@ import java.util.Map;
 public class URL implements Serializable {
   private static final long serialVersionUID = 3692544077592468598L;
 
-  private final Map<String, String> urlParam;
-  private final URLAddress urlAddress;
+  private Map<String, String> urlParam;
+  private URLAddress urlAddress;
+
+  public URL() {
+  }
 
   public URL(URLAddress urlAddress) {
     this.urlParam = new HashMap<>();

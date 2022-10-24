@@ -1,6 +1,5 @@
 package io.github.makersy.yrpc.client.proxy;
 
-import lombok.extern.slf4j.Slf4j;
 import io.github.makersy.yrpc.client.RpcClient;
 import io.github.makersy.yrpc.common.model.Result;
 import io.github.makersy.yrpc.common.model.RpcRequest;
@@ -8,14 +7,15 @@ import io.github.makersy.yrpc.common.model.RpcResponse;
 import io.github.makersy.yrpc.common.util.SpringUtil;
 import io.github.makersy.yrpc.config.ProtocolConfig;
 import io.github.makersy.yrpc.config.RegistryConfig;
-import io.github.makersy.yrpc.registry.Registry0;
+import io.github.makersy.yrpc.registry.Registry;
+import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * @author yhl
+ * @author makersy
  * @date 2022/9/24
  * @description
  */
@@ -69,7 +69,7 @@ public class ClientInvocationHandler<T> implements InvocationHandler {
     try {
       if (rpcClient == null) {
         rpcClient = new RpcClient(
-                SpringUtil.getBean(Registry0.class),
+                SpringUtil.getBean(Registry.class),
                 SpringUtil.getBean(RegistryConfig.class),
                 SpringUtil.getBean(ProtocolConfig.class));
         log.debug("init rpc client success, class: {}", clz);

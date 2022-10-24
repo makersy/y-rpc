@@ -7,12 +7,12 @@ import io.github.makersy.demo.api.UserService;
 import io.github.makersy.demo.api.model.User;
 
 /**
- * @author yhl
+ * @author makersy
  * @date 2022/10/12
  * @description
  */
 
-@RpcService
+@RpcService(interfaceClass = UserService.class)
 @Slf4j
 public class UserServiceImpl implements UserService {
 

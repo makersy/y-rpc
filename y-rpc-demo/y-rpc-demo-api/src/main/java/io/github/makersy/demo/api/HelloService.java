@@ -3,7 +3,7 @@ package io.github.makersy.demo.api;
 import io.github.makersy.yrpc.common.model.Result;
 
 /**
- * @author yhl
+ * @author makersy
  * @date 2022/9/19
  * @description
  */

@@ -11,7 +11,7 @@ import io.github.makersy.yrpc.common.serialize.Serialization;
 import java.util.List;
 
 /**
- * @author yhl
+ * @author makersy
  * @date 2022/9/14
  * @description See message structure in {@link RpcEncoder}
  */

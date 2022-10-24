@@ -3,7 +3,7 @@ package io.github.makersy.yrpc.common.model;
 import java.io.Serializable;
 
 /**
- * @author yhl
+ * @author makersy
  * @date 2022/9/20
  * @description
  */

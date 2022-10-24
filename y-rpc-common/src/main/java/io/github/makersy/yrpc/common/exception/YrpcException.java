@@ -1,7 +1,7 @@
 package io.github.makersy.yrpc.common.exception;
 
 /**
- * @author yhl
+ * @author makersy
  * @date 2022/9/25
  * @description
  */

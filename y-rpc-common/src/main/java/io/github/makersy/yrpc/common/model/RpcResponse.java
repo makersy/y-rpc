@@ -3,7 +3,7 @@ package io.github.makersy.yrpc.common.model;
 import lombok.Data;
 
 /**
- * @author yhl
+ * @author makersy
  * @date 2022/9/14
  * @description
  */

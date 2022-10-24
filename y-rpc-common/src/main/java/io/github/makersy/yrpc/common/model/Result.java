@@ -5,7 +5,7 @@ import lombok.NoArgsConstructor;
 import io.github.makersy.yrpc.common.model.enums.ErrorCode;
 
 /**
- * @author yhl
+ * @author makersy
  * @date 2022/10/13
  * @description
  */

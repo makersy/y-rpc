@@ -1,7 +1,7 @@
 package io.github.makersy.yrpc.common.serialize;
 
 /**
- * @author yhl
+ * @author makersy
  * @date 2022/9/24
  * @description
  */

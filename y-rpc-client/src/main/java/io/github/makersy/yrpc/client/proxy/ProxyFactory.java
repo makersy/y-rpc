@@ -6,7 +6,7 @@ import io.github.makersy.yrpc.client.util.ProxyUtil;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * @author yhl
+ * @author makersy
  * @date 2022/10/10
  * @description
  */

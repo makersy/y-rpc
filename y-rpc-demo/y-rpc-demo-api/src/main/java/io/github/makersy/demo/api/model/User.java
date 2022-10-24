@@ -3,7 +3,7 @@ package io.github.makersy.demo.api.model;
 import lombok.Data;
 
 /**
- * @author yhl
+ * @author makersy
  * @date 2022/10/12
  * @description
  */

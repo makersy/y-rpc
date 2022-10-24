@@ -8,7 +8,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * @author yhl
+ * @author makersy
  * @date 2022/10/8
  * @description 暴露provider的服务
  */
@@ -17,4 +17,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Service
 public @interface RpcService {
+    Class<?> interfaceClass() default void.class;
 }

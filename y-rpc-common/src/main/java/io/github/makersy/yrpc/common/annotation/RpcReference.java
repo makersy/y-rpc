@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * @author yhl
+ * @author makersy
  * @date 2022/9/24
  * @description 引入yrpc服务
  */

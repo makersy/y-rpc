@@ -1,7 +1,7 @@
 package io.github.makersy.yrpc.common.constants;
 
 /**
- * @author yhl
+ * @author makersy
  * @date 2022/9/15
  * @description
  */

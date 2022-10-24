@@ -1,14 +1,14 @@
 package io.github.makersy.yrpc.server.test;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import io.github.makersy.yrpc.config.RegistryConfig;
 import io.github.makersy.yrpc.config.RpcServerConfig;
 import io.github.makersy.yrpc.config.ZookeeperConfig;
-import io.github.makersy.yrpc.registry.ZookeeperRegistry0;
+import io.github.makersy.yrpc.registry.ZookeeperRegistry;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
- * @author yhl
+ * @author makersy
  * @date 2022/10/10
  * @description
  */
@@ -16,7 +16,7 @@ import io.github.makersy.yrpc.registry.ZookeeperRegistry0;
 public class ZkTest {
 
   private RegistryConfig registryConfig;
-  private ZookeeperRegistry0 registry0;
+  private ZookeeperRegistry registry;
 
   @BeforeEach
   public void beforeEach() {
@@ -27,16 +27,18 @@ public class ZkTest {
 
     RpcServerConfig serverConfig = new RpcServerConfig();
 
-    registry0 = new ZookeeperRegistry0(registryConfig, zookeeperConfig, serverConfig);
+    registry = new ZookeeperRegistry(zookeeperConfig, serverConfig);
 
-    registry0.init();
+    try {
+      registry.start();
+    } catch (Throwable e) {
+      throw new RuntimeException(e);
+    }
   }
   @Test
   public void testZkGetNodes() {
     try {
-      registry0.registerProvider();
 
-      System.out.println(registry0.getNodeList(registryConfig.getTopic()));
     } catch (Throwable e) {
       e.printStackTrace();
     }

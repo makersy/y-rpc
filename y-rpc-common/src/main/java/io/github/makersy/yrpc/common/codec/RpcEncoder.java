@@ -10,7 +10,7 @@ import io.github.makersy.yrpc.common.serialize.Serialization;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
- * @author yhl
+ * @author makersy
  * @date 2022/9/14
  * @description
  *

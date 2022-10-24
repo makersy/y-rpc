@@ -5,12 +5,12 @@ import io.github.makersy.yrpc.common.model.Result;
 import io.github.makersy.demo.api.HelloService;
 
 /**
- * @author yhl
+ * @author makersy
  * @date 2022/9/19
  * @description
  */
 
-@RpcService
+@RpcService(interfaceClass = HelloService.class)
 public class HelloServiceImpl implements HelloService {
   @Override
   public Result<String> sayHello(String user) {

@@ -1,5 +1,10 @@
 package io.github.makersy.yrpc.registry;
 
+import io.github.makersy.yrpc.common.constants.Constants;
+import io.github.makersy.yrpc.common.model.URL;
+import io.github.makersy.yrpc.common.model.URLAddress;
+import io.github.makersy.yrpc.config.RpcServerConfig;
+import io.github.makersy.yrpc.config.ZookeeperConfig;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.curator.framework.CuratorFramework;
@@ -7,115 +12,98 @@ import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.curator.x.discovery.ServiceCache;
 import org.apache.curator.x.discovery.ServiceDiscovery;
-import org.apache.curator.x.discovery.details.InstanceSerializer;
-import org.apache.curator.x.discovery.details.JsonInstanceSerializer;
-import org.apache.zookeeper.CreateMode;
-import org.apache.zookeeper.Watcher;
-import org.apache.zookeeper.ZooDefs;
-import org.apache.zookeeper.ZooKeeper;
-import org.springframework.beans.factory.annotation.Value;
-import io.github.makersy.yrpc.common.constants.Constants;
-import io.github.makersy.yrpc.common.model.URLAddress;
-import io.github.makersy.yrpc.config.RegistryConfig;
-import io.github.makersy.yrpc.config.ZookeeperConfig;
+import org.apache.curator.x.discovery.ServiceDiscoveryBuilder;
+import org.apache.curator.x.discovery.ServiceInstance;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import java.net.InetAddress;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 /**
- * @author yhl
+ * @author makersy
  * @date 2022/9/17
  * @description
- * todo 将provider信息注册到service级别，而不是注册到服务级别。
  */
 
-//@Service
+@Service
 @Slf4j
 @RequiredArgsConstructor
-//@ConditionalOnProperty(prefix = "yrpc.registry", name = "protocol", havingValue = "zookeeper")
-public class ZookeeperRegistry<T> implements Registry {
+@ConditionalOnProperty(prefix = "yrpc.registry", name = "protocol", havingValue = "zookeeper")
+public class ZookeeperRegistry implements Registry {
 
-  private final RegistryConfig registryConfig;
   private final ZookeeperConfig zkConfig;
+  private final RpcServerConfig rpcServerConfig;
 
-  @Value("${server.port}")
-  private int serverPort;
+  private CuratorFramework client;
+  private ServiceDiscovery<URL> serviceDiscovery;
+  private ConcurrentHashMap<String, ServiceCache<URL>> serviceCacheMap;
 
-  private ZooKeeper zooKeeper;
-
-  private InstanceSerializer<URLAddress> serializer = new JsonInstanceSerializer<>(URLAddress.class);
-  private ServiceDiscovery<T> serviceDiscovery;
-
-  private ServiceCache<T> serviceCache;
-
+  @PostConstruct
   public void start() throws Throwable {
     // 初始化client
-    log.info("Start to connect zookeeper, addr: {}", zkConfig.getAddr());
+    log.info("Start to build zookeeper client, addr: {}", zkConfig.getAddr());
 
-    CuratorFramework client = CuratorFrameworkFactory.newClient(zkConfig.getAddr(), new ExponentialBackoffRetry(1000, 3));
+    client = CuratorFrameworkFactory.builder()
+            .connectString(zkConfig.getAddr())
+            .retryPolicy(new ExponentialBackoffRetry(1000, 3))
+            .build();
     client.start();
-    client.create()
-            .withMode(CreateMode.PERSISTENT)
-            .withACL(ZooDefs.Ids.OPEN_ACL_UNSAFE)
-            .forPath(Constants.ZK_REGISTRY_PATH);
+    client.blockUntilConnected();
 
-    // -------------
-    // 初始化连接
-    ZooKeeper zk = new ZooKeeper(
-            zkConfig.getAddr(),
-            Constants.ZK_SESSION_TIMEOUT,
-            watchedEvent -> {
-              Watcher.Event.KeeperState state = watchedEvent.getState();
-              if (state == Watcher.Event.KeeperState.SyncConnected) {
-                log.info("Connect zookeeper successfully, path: {}", watchedEvent.getPath());
-                return;
-              }
+    log.info("Zookeeper client build success, addr: {}", zkConfig.getAddr());
 
-              if (state == Watcher.Event.KeeperState.Disconnected || state == Watcher.Event.KeeperState.Expired) {
-                try {
-                  // 自动重连
-                  log.info("Trying to reconnect zookeeper, path: {}", watchedEvent.getPath());
-                  start();
-                } catch (Throwable t) {
-                  log.error("Reconnect zk failed", t);
-                }
-              }
-            });
+    serviceDiscovery = ServiceDiscoveryBuilder.builder(URL.class)
+            .basePath(Constants.ZK_REGISTRY_PATH)
+            .client(client)
+            .build();
+    serviceDiscovery.start();
 
-    // 创建/easy-rpc节点
-    String path = Constants.ZK_REGISTRY_PATH;
-    if (zk.exists(path, false) == null) {
-      zk.create(path, new byte[0], ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
-    }
-
-    // 创建/easy-rpc/{topic}节点
-    path += "/" + registryConfig.getTopic();
-    if (zk.exists(path, false) == null) {
-      zk.create(path, new byte[0], ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
-    }
-
-    // 创建/easy-rpc/{topic}/{ip:port}节点
-    InetAddress addr = InetAddress.getLocalHost();
-    path += "/" + addr.getHostAddress() + ":" + serverPort;
-    if (zk.exists(path, false) == null) {
-      zk.create(path, new byte[0], ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
-    }
-
-    this.zooKeeper = zk;
+    serviceCacheMap = new ConcurrentHashMap<>();
   }
 
   @Override
   public void registerService(String serviceName) throws Exception {
+    if (!serviceCacheMap.containsKey(serviceName)) {
+      serviceDiscovery.registerService(buildServiceInstance(serviceName));
+    }
 
+    // fixme- client service cache can't be here
+    ServiceCache<URL> serviceCache = serviceDiscovery.serviceCacheBuilder()
+            .name(serviceName)
+            .build();
+    serviceCache.start();
+    serviceCacheMap.put(serviceName, serviceCache);
+
+    log.info("register service success, service name: {}", serviceName);
   }
 
   @Override
   public void unregisterService(String serviceName) throws Exception {
+    serviceDiscovery.unregisterService(buildServiceInstance(serviceName));
+  }
 
+  private ServiceInstance<URL> buildServiceInstance(String serviceName) throws Exception {
+    URLAddress urlAddress = new URLAddress(InetAddress.getLocalHost().getHostAddress(), rpcServerConfig.getPort());
+    URL url = new URL(urlAddress);
+
+    return ServiceInstance.<URL>builder()
+            .name(serviceName)
+            .payload(url)
+            .build();
   }
 
   @Override
-  public List<URLAddress> findServiceProviders(String serviceName) {
-    return null;
+  public List<URL> findServiceProviders(String serviceName) {
+    if (!serviceCacheMap.containsKey(serviceName)) {
+      return Collections.emptyList();
+    }
+    return serviceCacheMap.get(serviceName).getInstances().stream()
+            .map(ServiceInstance::getPayload)
+            .collect(Collectors.toList());
   }
 }
