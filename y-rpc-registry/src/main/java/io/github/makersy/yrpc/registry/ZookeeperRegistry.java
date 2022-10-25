@@ -1,5 +1,7 @@
 package io.github.makersy.yrpc.registry;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import io.github.makersy.yrpc.common.constants.Constants;
 import io.github.makersy.yrpc.common.model.URL;
 import io.github.makersy.yrpc.common.model.URLAddress;
@@ -14,15 +16,14 @@ import org.apache.curator.x.discovery.ServiceCache;
 import org.apache.curator.x.discovery.ServiceDiscovery;
 import org.apache.curator.x.discovery.ServiceDiscoveryBuilder;
 import org.apache.curator.x.discovery.ServiceInstance;
+import org.apache.curator.x.discovery.details.JsonInstanceSerializer;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.net.InetAddress;
-import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * @author makersy
@@ -41,7 +42,7 @@ public class ZookeeperRegistry implements Registry {
 
   private CuratorFramework client;
   private ServiceDiscovery<URL> serviceDiscovery;
-  private ConcurrentHashMap<String, ServiceCache<URL>> serviceCacheMap;
+  private Cache<String, ServiceCache<URL>> serviceCacheMap;
 
   @PostConstruct
   public void start() throws Throwable {
@@ -57,28 +58,21 @@ public class ZookeeperRegistry implements Registry {
 
     log.info("Zookeeper client build success, addr: {}", zkConfig.getAddr());
 
+    // 服务发现
     serviceDiscovery = ServiceDiscoveryBuilder.builder(URL.class)
             .basePath(Constants.ZK_REGISTRY_PATH)
             .client(client)
+            .serializer(new JsonInstanceSerializer<>(URL.class))
             .build();
     serviceDiscovery.start();
 
-    serviceCacheMap = new ConcurrentHashMap<>();
+    // 服务缓存
+    serviceCacheMap = Caffeine.newBuilder().build();
   }
 
   @Override
   public void registerService(String serviceName) throws Exception {
-    if (!serviceCacheMap.containsKey(serviceName)) {
-      serviceDiscovery.registerService(buildServiceInstance(serviceName));
-    }
-
-    // fixme- client service cache can't be here
-    ServiceCache<URL> serviceCache = serviceDiscovery.serviceCacheBuilder()
-            .name(serviceName)
-            .build();
-    serviceCache.start();
-    serviceCacheMap.put(serviceName, serviceCache);
-
+    serviceDiscovery.registerService(buildServiceInstance(serviceName));
     log.info("register service success, service name: {}", serviceName);
   }
 
@@ -98,12 +92,32 @@ public class ZookeeperRegistry implements Registry {
   }
 
   @Override
-  public List<URL> findServiceProviders(String serviceName) {
-    if (!serviceCacheMap.containsKey(serviceName)) {
-      return Collections.emptyList();
+  public URL findServiceProvider(String serviceName) {
+    ServiceCache<URL> service = serviceCacheMap.get(serviceName, str -> buildServiceCache(serviceName));
+    if (service == null) {
+      return null;
     }
-    return serviceCacheMap.get(serviceName).getInstances().stream()
-            .map(ServiceInstance::getPayload)
-            .collect(Collectors.toList());
+
+    List<ServiceInstance<URL>> instances = service.getInstances();
+    // 随机一个节点
+    // todo 负载均衡
+    ServiceInstance<URL> instance = instances.get(ThreadLocalRandom.current().nextInt(instances.size()));
+    log.info("service url: {}", instance.getPayload());
+
+    return instance.getPayload();
+  }
+
+  private ServiceCache<URL> buildServiceCache(String serviceName) {
+    try {
+      ServiceCache<URL> serviceCache = serviceDiscovery.serviceCacheBuilder()
+              .name(serviceName)
+              .build();
+      serviceCache.start();
+      log.info("service cache start successfully, serviceName: {}", serviceName);
+      return serviceCache;
+    } catch (Exception e) {
+      log.error("service cache start failed, serviceName: {}", serviceName, e);
+      return null;
+    }
   }
 }

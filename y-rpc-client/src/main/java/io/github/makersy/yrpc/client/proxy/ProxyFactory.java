@@ -1,7 +1,7 @@
 package io.github.makersy.yrpc.client.proxy;
 
-import lombok.extern.slf4j.Slf4j;
 import io.github.makersy.yrpc.client.util.ProxyUtil;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.ConcurrentHashMap;
 

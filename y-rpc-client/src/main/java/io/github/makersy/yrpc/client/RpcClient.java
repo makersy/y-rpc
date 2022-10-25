@@ -27,11 +27,8 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.util.concurrent.DefaultThreadFactory;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.util.CollectionUtils;
 
 import java.net.InetSocketAddress;
-import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
@@ -97,17 +94,13 @@ public class RpcClient {
   }
 
   public RpcResponse send(RpcRequest request) throws Exception {
-    List<URL> serviceProviders = registry.findServiceProviders(request.getClassName());
-    if (CollectionUtils.isEmpty(serviceProviders)) {
+    URL serviceProvider = registry.findServiceProvider(request.getClassName());
+    if (serviceProvider == null) {
       throw new YrpcException(ExceptionCode.NO_PROVIDERS, "no provider");
     }
 
-    // 随机一个节点
-    // todo 负载均衡
-    URL serviceUrl = serviceProviders.get(ThreadLocalRandom.current().nextInt(serviceProviders.size()));
-
     // 写入channel缓冲区
-    Channel channel = getChannel(serviceUrl.getRawAddress());
+    Channel channel = getChannel(serviceProvider.getRawAddress());
     channel.writeAndFlush(request).await();
 
     RpcFuture rpcFuture = new RpcFuture(request);

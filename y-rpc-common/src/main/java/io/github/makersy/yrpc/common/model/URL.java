@@ -1,5 +1,7 @@
 package io.github.makersy.yrpc.common.model;
 
+import lombok.ToString;
+
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
@@ -10,6 +12,7 @@ import java.util.Map;
  * @description
  */
 
+@ToString
 public class URL implements Serializable {
   private static final long serialVersionUID = 3692544077592468598L;
 

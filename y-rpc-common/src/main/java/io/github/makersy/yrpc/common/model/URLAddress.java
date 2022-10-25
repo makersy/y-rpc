@@ -1,5 +1,7 @@
 package io.github.makersy.yrpc.common.model;
 
+import lombok.ToString;
+
 import java.io.Serializable;
 
 /**
@@ -8,6 +10,7 @@ import java.io.Serializable;
  * @description
  */
 
+@ToString
 public class URLAddress implements Serializable {
   private static final long serialVersionUID = -8106879843261279092L;
 

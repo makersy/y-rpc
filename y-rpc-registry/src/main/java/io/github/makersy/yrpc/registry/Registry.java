@@ -2,8 +2,6 @@ package io.github.makersy.yrpc.registry;
 
 import io.github.makersy.yrpc.common.model.URL;
 
-import java.util.List;
-
 /**
  * @author makersy
  * @date 2022/9/20
@@ -18,7 +16,7 @@ public interface Registry {
 
   /**
    * @param serviceName interface name
-   * @return available provider urls
+   * @return available provider url
    */
-  List<URL> findServiceProviders(String serviceName);
+  URL findServiceProvider(String serviceName);
 }
