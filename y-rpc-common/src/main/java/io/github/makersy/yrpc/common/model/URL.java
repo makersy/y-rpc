@@ -1,6 +1,7 @@
 package io.github.makersy.yrpc.common.model;
 
-import lombok.ToString;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -10,17 +11,18 @@ import java.util.Map;
  * @author makersy
  * @date 2022/9/29
  * @description
+ * jackson requires object have: </p>
+ * 1. no-args constructor
+ * 2. getter method for all private field
  */
 
-@ToString
+@Data
+@NoArgsConstructor
 public class URL implements Serializable {
   private static final long serialVersionUID = 3692544077592468598L;
 
   private Map<String, String> urlParam;
   private URLAddress urlAddress;
-
-  public URL() {
-  }
 
   public URL(URLAddress urlAddress) {
     this.urlParam = new HashMap<>();

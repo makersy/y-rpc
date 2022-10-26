@@ -99,10 +99,10 @@ public class ZookeeperRegistry implements Registry {
     }
 
     List<ServiceInstance<URL>> instances = service.getInstances();
-    // 随机一个节点
-    // todo 负载均衡
+    // choose random node
+    // TODO: load balance
     ServiceInstance<URL> instance = instances.get(ThreadLocalRandom.current().nextInt(instances.size()));
-    log.info("service url: {}", instance.getPayload());
+    log.debug("find service provider: {}", instance.getPayload());
 
     return instance.getPayload();
   }

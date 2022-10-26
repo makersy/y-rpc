@@ -3,7 +3,3 @@ yrpc:
     zookeeper:
       addr: 127.0.0.1:2181
     protocol: zookeeper
-  server:
-    thread-pool: fixed
-    queues: 1000
-    threads: 200
