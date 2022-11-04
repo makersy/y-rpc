@@ -78,6 +78,7 @@ public class RpcServerHandler extends ChannelInboundHandlerAdapter {
 
     Method method = serviceBean.getClass().getDeclaredMethod(request.getMethodName(), request.getParameterTypes());
     Preconditions.checkNotNull(method, String.format("failed to find service method, methodName: %s", request.getMethodName()));
+    method.setAccessible(true);
 
     return method.invoke(serviceBean, request.getParameters());
   }
