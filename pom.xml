@@ -7,7 +7,7 @@
     <version>2.7.3</version>
   </parent>
   <groupId>io.github.makersy</groupId>
-  <artifactId>y-rpc</artifactId>
+  <artifactId>y-rpc-parent</artifactId>
   <version>${revision}</version>
 
   <modules>
@@ -17,6 +17,8 @@
     <module>y-rpc-demo</module>
     <module>y-rpc-config</module>
     <module>y-rpc-registry</module>
+    <module>y-rpc-serialization</module>
+    <module>y-rpc-dependencies-bom</module>
   </modules>
   <packaging>pom</packaging>
 
@@ -26,9 +28,18 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>11</maven.compiler.source>
     <maven.compiler.target>11</maven.compiler.target>
-
     <revision>1.0.0-SNAPSHOT</revision>
   </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>io.github.makersy</groupId>
+        <artifactId>y-rpc-dependencies-bom</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
   <dependencies>
     <dependency>
